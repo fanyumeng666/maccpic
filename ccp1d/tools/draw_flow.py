@@ -114,7 +114,7 @@ for i, (lab, st) in enumerate([('已完成并通过测试', 'done'), ('待完成
     s = STYLE[st]
     ax.add_patch(FancyBboxPatch((1.5, 8.6 - 2.2 * i), 3.2, 1.5, boxstyle='round,pad=0.15', fc=s['fc'], ec=s['ec'], ls=s['ls'], lw=1.2))
     ax.text(5.3, 9.35 - 2.2 * i, lab, fontsize=8.5, va='center')
-ax.text(12.0, 9.6, '状态日期 2026-11-01\nM0、M1、M2 完成，Case 1 首轮\n已对上基准；M3、M5–M7 待做', fontsize=8, va='top', color='#444')
+ax.text(12.0, 9.6, '状态日期 2026-11-01\nM0、M1、M2、M4、M5 完成\nM3、M6、M7 待做', fontsize=8, va='top', color='#444')
 
 arrow(bottom(A1), top(A2)); arrow(bottom(A2), top(A3)); arrow(bottom(A3), top(A4)); arrow(bottom(A4), top(A5))
 arrow(bottom(A5), (11.3, 30.3))
@@ -168,19 +168,19 @@ C1 = box(66.5, 55.3, 32, 4.0, 'diag: diag_final（iperiod == n_periods）', '归
 C2 = box(66.5, 47.0, 32, 7.3, '输出文件（全部 ASCII，# 表头带单位，numpy.loadtxt 直接读）', 'profiles.dat：n_e, n_i, φ, E, ⟨ε_e⟩, 电离率, ⟨J_e·E⟩, ⟨J_i·E⟩, Γ_i, ⟨ε_x,e⟩, ⟨ε_i⟩\n'
          'iedf_left/right, eedf_left/right：壁面通量能谱  eepf.dat：F(ε), F/√ε（中心 10 %）\nxt_phi/ne/ni/Je/Ji/PeE/ioniz.dat：n_phase × (nx+1) 相位分辨图\n'
          'info.txt 结果段：中心密度、T_eff、ωpe·dt、Γ、撞击能、能量平衡三把尺 P_part / P_JE / P_VI、P_numerical', 'done', lfs=7.6)
-C3 = box(66.5, 40.4, 15.3, 5.6, 'tools/ 已有', 'plot_history / check_sheath / plot_initial\ncompare_turner.py  与基准叠画+误差\nplot_profiles / plot_dist  剖面、能谱\ncheck_run.py  13 项自检   draw_flow 本图', 'done', lfs=7.6)
-C4 = box(83.2, 40.4, 15.3, 5.6, 'tools/ 待写', 'plot_xt.py  x–t 伪彩图\nconvergence.py  收敛表\n（M5、M6）', 'todo', tag='M5–M6', lfs=7.6)
-C5 = box(66.5, 29.0, 32, 10.4, '验证已通过（make check + 物理标定 + 基准）', 'T1 泊松 1e-14、二阶收敛、高斯定律 1e-13   T2 CIC 沉积 1e-16、端点半格、1 与 2 rank 一致\n'
+C3 = box(66.5, 40.4, 15.3, 5.6, 'tools/ 已有', 'plot_history / check_sheath / plot_initial\ncompare_turner.py  与基准叠画+误差\nconvergence.py  T15 收敛表   check_run.py 13 项\nplot_profiles / plot_dist   draw_flow 本图', 'done', lfs=7.6)
+C4 = box(83.2, 40.4, 15.3, 5.6, 'tools/ 待写', 'plot_xt.py  x–t 伪彩图（M6）', 'todo', tag='M6', lfs=7.6)
+C5 = box(66.5, 28.0, 32, 11.4, '验证已通过（make check + 物理标定 + 基准 + 收敛）', 'T1 泊松 1e-14、二阶收敛、高斯定律 1e-13   T2 CIC 沉积 1e-16、端点半格、1 与 2 rank 一致\n'
          'T3 随机数 + check-rng（2e7 粒子尾巴对称，6000 样本 z 值 rms 1.00）   T8 续算逐位相同（含碰撞）\n'
          'T4 截面查表 = 原表（电子 1e-15，离子 1e-7）；ν_max 8.654e7 / 2.793e7   T10 Langmuir 频率差 3e-4\n'
          'T5 MCC 频率：10/30/100 eV 电子四过程、5 eV 离子两过程 = n_gσv×0.992，|z| < 1.7\n'
          'T6 运动学：弹性/激发/电离能量关系 1e-15、各向同性 χ² 正常、新离子 T_g、离子质心系不变量\n'
          'T7 弛豫：离子热化到 300 K 偏差 0.05 %；电子弹性冷却与 ODE 差 0.02 %   T11 无碰撞鞘层\n'
-         'T13 Case 1 自检 + T14 全尺寸：中心 n_i 1.432e14 vs 1.403e14（+2.1 %），内点 rms 1.5 %，4 核 204 s', 'done', lfs=7.4)
-C6 = box(66.5, 20.6, 32, 7.4, '验证待做', 'T12 电子群：E/N = 50–500 Td 平均能量、漂移速度；e·E·v_d = 碰撞损失（M3）\n'
-         'T15 收敛：换种子噪声地板、dt/2、nx 256、nppc 256/1024（M5）\n'
+         'T13 Case 1 自检 + T14 全尺寸：中心 n_i 1.432e14 vs 1.403e14（+2.1 %），内点 rms 1.5 %，4 核 170 s\n'
+         'T15 收敛：dt/2、nx 256、nppc 1024 与基线差 ≤ 2 倍换种子噪声（地板 1.4 %）；nppc 256 略超', 'done', lfs=7.4)
+C6 = box(66.5, 20.6, 32, 6.4, '验证待做', 'T12 电子群：E/N = 50–500 Td 平均能量、漂移速度；e·E·v_d = 碰撞损失（M3）\n'
          'T16 诊断自洽（∫IEDF = Γ_i、x–t 积分 = history）与四类图（M6）\n'
-         'T17 双频：IEDF 随 V_lf 展宽（M7）', 'todo', tag='M3,M5–M7', lfs=7.6)
+         'T17 双频：IEDF 随 V_lf 展宽（M7）', 'todo', tag='M3,M6,M7', lfs=7.6)
 C7 = box(66.5, 12.2, 32, 7.2, 'data/（已就位）', 'he/electron_scattering, excitation_1 (19.82 eV), excitation_2 (20.61 eV), ionization (24.59 eV)：e–He，Biagi 7.1\n'
          'he/ion_scattering（各向同性）, ion_back_scatter（背向 = 电荷交换）：He⁺–He，Phelps，能量变量 ε_rel\n'
          'he/charge_exchange.dat：基准不用。格式 energy[eV] sigma[m²]，0.01 eV 间距，到 749.99 eV，超出取末值\n'

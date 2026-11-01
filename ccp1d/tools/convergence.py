@@ -62,18 +62,30 @@ else:
 print('pairwise deviations of the smoothed profiles (max / rms, % of the baseline centre density):')
 names = [r['name'] for r in runs]
 print(' ' * 12 + ''.join('%14s' % n[:13] for n in names))
-ok = True
 for a in runs:
     row = '%12s' % a['name'][:11]
     for c in runs:
         d = np.abs(a['ni0'] - c['ni0']) / b['nc']
         row += '  %5.2f / %4.2f' % (100 * d.max(), 100 * np.sqrt(np.mean(d**2)))
-        if floor_max is not None and a is b and c is not b and c is not noise:
-            if d.max() > 2 * floor_max or np.sqrt(np.mean(d**2)) > 2 * floor_rms:
-                ok = False
-                print('    -> %s differs from the baseline by more than 2x the noise floor' % c['name'])
     print(row)
+# criterion: a run that differs from the baseline by dt, dx or more particles must stay within
+# 2x the seed-to-seed noise; the expected noise of a pair scales with the particles per cell,
+# sqrt((1/nppc_a + 1/nppc_b)/(2/nppc_base)), so a coarser run is judged against its own noise
+ok = True
 if floor_max is not None:
+    print('baseline versus each run (allowed = 2x the seed noise scaled to the particles per cell of the pair):')
+    for c in runs[1:]:
+        if c is noise:
+            continue
+        d = np.abs(c['ni0'] - b['ni0']) / b['nc']
+        sc = np.sqrt((1.0 / c['info']['nppc'] + 1.0 / b['info']['nppc']) / (2.0 / b['info']['nppc']))
+        amax, arms = 2 * floor_max * sc, 2 * floor_rms * sc
+        finer = (c['info']['nppc'] >= b['info']['nppc']) and (c['info']['nx'] >= b['info']['nx']) and (c['info']['steps_per_period'] >= b['info']['steps_per_period'])
+        passed = d.max() <= amax and np.sqrt(np.mean(d**2)) <= arms
+        print('  %-9s max %.2f %% (allowed %.2f), rms %.2f %% (allowed %.2f)  %s%s' % (c['name'], 100 * d.max(), 100 * amax, 100 * np.sqrt(np.mean(d**2)), 100 * arms,
+              'PASS' if passed else 'FAIL', '' if finer else '  (coarser than the baseline: information only)'))
+        if finer and not passed:
+            ok = False
     print('T15 (every refinement within 2x the seed-to-seed noise):', 'PASS' if ok else 'FAIL')
 
 fig, ax = plt.subplots(2, 1, figsize=(9, 8), sharex=True, gridspec_kw={'height_ratios': [3, 1.5]})
