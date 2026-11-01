@@ -7,7 +7,7 @@
 !  Program flow
 !    read_input -> allocate -> poisson_init -> (xsec_load) ->
 !    fresh run: init_fresh;  restart: restart_read
-!    every step: push (both species) -> mcc -> deposit_rho ->
+!    every step: push (both species) -> mcc_step -> deposit_rho ->
 !                poisson_solve with V(t_{n+1}) -> diag_step
 !    every period: diag_period (history line), restart files
 !    end: diag_final (profiles, distributions, x-t maps, info.txt)
@@ -22,6 +22,8 @@ program main
   use poisson
   use deposit
   use push
+  use xsec
+  use mcc
   use diag
   use init
   implicit none
@@ -38,9 +40,10 @@ program main
   call poisson_init(nx, dx)
   call push_init()
   call diag_init()
-  mcc_on = .false.
-  if (n_gas > 0d0 .and. myrank == 0) then
-    write(*,'(a)') 'ccp1d WARNING: n_gas > 0 but collisions are not implemented yet (M2); running collisionless'
+  mcc_on = n_gas > 0d0
+  if (mcc_on) then
+    call xsec_load()
+    call mcc_init()
   end if
   !
   if (restart) then
@@ -68,7 +71,7 @@ program main
     do k = 1, steps_per_period
       call push_species(1)
       call push_species(2)
-      ! if (mcc_on) call mcc_step()           ! M2
+      if (mcc_on) call mcc_step()
       call deposit_rho()
       ex_old = ex
       it = it + 1

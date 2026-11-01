@@ -23,6 +23,12 @@ module push
   real(8)    :: work_step(nsp) = 0d0, ekin_step(nsp) = 0d0, vxsum_step(nsp) = 0d0
   integer(8) :: nwall_step(2,nsp) = 0
   real(8)    :: ewall_step(2,nsp) = 0d0
+  ! work of the field on the particles deposited on the nodes with the CIC
+  ! weights of the old position (per unit weight, J per step): integrates
+  ! exactly to work_step, unlike the grid product J.E (diag uses it in the
+  ! measurement window: tally_work = in_window)
+  logical    :: tally_work = .false.
+  real(8), allocatable :: work_dep(:,:)
   ! absorbed-particle buffer of this step
   integer :: nabs = 0
   integer, allocatable :: abs_side(:), abs_isp(:)
@@ -31,7 +37,8 @@ module push
 contains
   !
   subroutine push_init()
-    allocate(a(0:nx))
+    allocate(a(0:nx), work_dep(0:nx,nsp))
+    work_dep = 0d0
     allocate(abs_side(4096), abs_isp(4096), abs_energy(4096))
     nabs = 0
   end subroutine push_init
@@ -40,12 +47,13 @@ contains
     integer, intent(in) :: isp
     integer(8) :: i
     integer :: j, side
-    real(8) :: xd, s, ep, vold, vnew, xi, f, wsum, esum, vsum, e, hm
+    real(8) :: xd, s, ep, vold, vnew, xi, f, wsum, esum, vsum, e, hm, wp
     f = qm(isp)*dt
     a = f*ex
     hm = 0.5d0*m(isp)
     wsum = 0d0; esum = 0d0; vsum = 0d0
     nwall_step(:,isp) = 0; ewall_step(:,isp) = 0d0
+    if (tally_work) work_dep(:,isp) = 0d0
     i = 1
     do while (i <= np(isp))
       xd = x(i,isp)/dx
@@ -59,6 +67,11 @@ contains
       x(i,isp) = xi
       wsum = wsum + ep*(vold + vnew)           ! 2/m * work
       vsum = vsum + vnew
+      if (tally_work) then
+        wp = hm*ep*(vold + vnew)               ! q E_p dt (v- + v+)/2
+        work_dep(j,isp)   = work_dep(j,isp)   + wp*(1d0 - s)
+        work_dep(j+1,isp) = work_dep(j+1,isp) + wp*s
+      end if
       if (xi < 0d0 .or. xi >= L) then
         side = 2
         if (xi < 0d0) side = 1

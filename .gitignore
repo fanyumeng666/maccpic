@@ -47,3 +47,5 @@ __pycache__/
 ccp1d/tests/random/test_tails
 ccp1d/tests/random/test_seeds
 ccp1d/tests/random/test_corr
+ccp1d/tests/mcc/test_xsec
+ccp1d/tests/mcc/test_mcc

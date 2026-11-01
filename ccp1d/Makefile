@@ -6,16 +6,17 @@
 FC      = mpif90
 OPT     = -O3 -march=native -fimplicit-none -ffree-line-length-none
 DBG     = -g -O0 -ffree-line-length-none -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow -Wall -Wextra \
-          -finit-real=snan -finit-integer=-99999999 -fimplicit-none -Wno-unused-dummy-argument -Wno-integer-division
+          -finit-real=snan -finit-integer=-99999999 -fimplicit-none -Wno-unused-dummy-argument -Wno-integer-division -Wno-compare-reals
 MPIRUN  = mpirun --allow-run-as-root --oversubscribe
 
-SRC  = input.f90 global.f90 random.f90 poisson.f90 deposit.f90 push.f90 version.f90 diag.f90 init.f90 main.f90
+SRC  = input.f90 global.f90 random.f90 poisson.f90 deposit.f90 push.f90 xsec.f90 mcc.f90 version.f90 diag.f90 init.f90 main.f90
 OBJ  = $(patsubst %.f90,obj/%.o,$(SRC))
 OBJD = $(patsubst %.f90,obj_dbg/%.o,$(SRC))
 # objects the tests link against (everything except main)
 LIBD = $(filter-out obj_dbg/main.o,$(OBJD))
 
-TESTS = tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_random tests/langmuir/langmuir
+TESTS = tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_random tests/langmuir/langmuir \
+        tests/mcc/test_xsec tests/mcc/test_mcc
 RNGTESTS = tests/random/test_tails tests/random/test_seeds tests/random/test_corr
 
 .PHONY: all debug check check-rng clean version
@@ -48,9 +49,11 @@ define DEPS
 $(1)/global.o:  $(1)/input.o
 $(1)/deposit.o: $(1)/global.o
 $(1)/push.o:    $(1)/global.o
-$(1)/diag.o:    $(1)/global.o $(1)/random.o $(1)/poisson.o $(1)/deposit.o $(1)/push.o $(1)/version.o
+$(1)/xsec.o:    $(1)/global.o
+$(1)/mcc.o:     $(1)/global.o $(1)/random.o $(1)/xsec.o
+$(1)/diag.o:    $(1)/global.o $(1)/random.o $(1)/poisson.o $(1)/deposit.o $(1)/push.o $(1)/xsec.o $(1)/mcc.o $(1)/version.o
 $(1)/init.o:    $(1)/global.o $(1)/random.o $(1)/poisson.o $(1)/deposit.o $(1)/diag.o
-$(1)/main.o:    $(1)/global.o $(1)/random.o $(1)/poisson.o $(1)/deposit.o $(1)/push.o $(1)/diag.o $(1)/init.o
+$(1)/main.o:    $(1)/global.o $(1)/random.o $(1)/poisson.o $(1)/deposit.o $(1)/push.o $(1)/xsec.o $(1)/mcc.o $(1)/diag.o $(1)/init.o
 endef
 $(eval $(call DEPS,obj))
 $(eval $(call DEPS,obj_dbg))
@@ -61,7 +64,7 @@ tests/%: tests/%.f90 $(LIBD)
 
 check: ccp1d_dbg $(TESTS)
 	@fail=0; \
-	for t in tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_random; do \
+	for t in tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_random tests/mcc/test_xsec tests/mcc/test_mcc; do \
 	  echo "==== $$t"; $(MPIRUN) -np 1 ./$$t || fail=1; \
 	done; \
 	echo "==== tests/deposit/test_deposit (2 ranks)"; $(MPIRUN) -np 2 ./tests/deposit/test_deposit || fail=1; \

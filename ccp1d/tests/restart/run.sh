@@ -9,7 +9,7 @@ MPIRUN="mpirun --allow-run-as-root --oversubscribe -np 2"
 rm -rf straight split; mkdir straight split
 cat > straight/ccp1d.in <<INP
 &ccp1d
-  L = 0.067d0, nx = 32, freq = 13.56d6, V0 = 450d0, n_gas = 0d0
+  L = 0.067d0, nx = 32, freq = 13.56d6, V0 = 450d0, n_gas = 9.64d20, T_gas = 300d0, xsec_dir = '../../../data/he'
   n0 = 2.56d14, Te0 = 30000d0, Ti0 = 300d0, nppc = 64
   steps_per_period = 200, n_periods = 6, n_avg = 4, n_phase = 50, seed = 4321, restart_every = 3
 /

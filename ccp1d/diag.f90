@@ -15,12 +15,14 @@ module diag
   use poisson
   use deposit
   use push
+  use xsec
+  use mcc
   use version
   implicit none
   private
   public :: diag_init, diag_step, diag_period, diag_final, diag_window_check, &
             restart_write, restart_read, write_info_header, dump_initial_state, &
-            history_open, in_window, numax_exceed, p_nion, p_nexc, wall_clock
+            history_open, in_window, numax_exceed, wall_clock
   !
   ! ---- per-period tallies (rank-local, reset in diag_period) ----
   real(8)    :: p_work(nsp) = 0d0, p_ewall(2,nsp) = 0d0, p_vi = 0d0
@@ -34,10 +36,10 @@ module diag
   ! ---- measurement window ----
   logical    :: in_window = .false.
   integer(8) :: nstep_win = 0                                   ! grid-based
-  real(8), allocatable :: w_dens(:,:), w_flux(:,:), w_ekd(:,:), w_ekxd(:,:), w_pe(:,:)   ! (0:nx,nsp)
+  real(8), allocatable :: w_dens(:,:), w_flux(:,:), w_ekd(:,:), w_ekxd(:,:), w_pe(:,:), w_pw(:,:)   ! (0:nx,nsp)
   real(8), allocatable :: w_ioniz(:)                            ! (0:nx), M2
   real(8), allocatable :: w_phi(:), w_ex(:)                     ! grid-based
-  integer, parameter   :: nxt = 6                               ! ne, ni, Je, Ji, Je.E, ionization
+  integer, parameter   :: nxt = 7                               ! ne, ni, Je, Ji, Je.E, ionization, electron work density
   real(8), allocatable :: w_xt(:,:,:)                           ! (0:nx, 0:n_phase-1, nxt)
   real(8), allocatable :: w_xt_phi(:,:)                         ! grid-based
   integer(8), allocatable :: w_xt_count(:)                      ! grid-based
@@ -45,20 +47,20 @@ module diag
   real(8), allocatable :: w_eepf(:)                             ! (nbin_eepf)
   real(8) :: w_work(nsp), w_ewall(2,nsp), w_nwall(2,nsp), w_pje(nsp), w_vi_cond
   real(8) :: w_ke_start(nsp), w_ke_end(nsp)
-  real(8) :: w_nion, w_nexc(2), w_eloss_el, w_einel                    ! M2 ledgers
+  real(8) :: w_nion, w_nexc(2), w_eloss_el, w_einel, w_egas_i, w_enewion   ! collision ledgers
   real(8) :: w_vi_disp, w_wf_start, w_wf_end, w_time_start, w_time_end ! grid-based
   integer :: w_period_start = 0                                        ! grid-based
   !
   integer :: u_hist = -1
   real(8) :: wall0 = 0d0
   real(8), allocatable :: dens(:), flux(:), ekd(:), ekxd(:), emid(:), ef(:)
-  character(len=8), parameter :: restart_magic = 'CCP1DR01'
+  character(len=8), parameter :: restart_magic = 'CCP1DR03'
   !
 contains
   !
   !--------------------------------------------------------------------
   subroutine diag_init()
-    allocate(w_dens(0:nx,nsp), w_flux(0:nx,nsp), w_ekd(0:nx,nsp), w_ekxd(0:nx,nsp), w_pe(0:nx,nsp), w_ioniz(0:nx))
+    allocate(w_dens(0:nx,nsp), w_flux(0:nx,nsp), w_ekd(0:nx,nsp), w_ekxd(0:nx,nsp), w_pe(0:nx,nsp), w_pw(0:nx,nsp), w_ioniz(0:nx))
     allocate(w_phi(0:nx), w_ex(0:nx))
     allocate(w_xt(0:nx,0:n_phase-1,nxt), w_xt_phi(0:nx,0:n_phase-1), w_xt_count(0:n_phase-1))
     allocate(w_hwall(nbin_iedf,2,nsp), w_eepf(nbin_eepf))
@@ -74,12 +76,12 @@ contains
   end function wall_clock
   !
   subroutine window_reset()
-    w_dens = 0d0; w_flux = 0d0; w_ekd = 0d0; w_ekxd = 0d0; w_pe = 0d0; w_ioniz = 0d0
+    w_dens = 0d0; w_flux = 0d0; w_ekd = 0d0; w_ekxd = 0d0; w_pe = 0d0; w_pw = 0d0; w_ioniz = 0d0
     w_phi = 0d0; w_ex = 0d0; w_xt = 0d0; w_xt_phi = 0d0; w_xt_count = 0
     w_hwall = 0d0; w_eepf = 0d0
     w_work = 0d0; w_ewall = 0d0; w_nwall = 0d0; w_pje = 0d0; w_vi_cond = 0d0
     w_ke_start = 0d0; w_ke_end = 0d0
-    w_nion = 0d0; w_nexc = 0d0; w_eloss_el = 0d0; w_einel = 0d0
+    w_nion = 0d0; w_nexc = 0d0; w_eloss_el = 0d0; w_einel = 0d0; w_egas_i = 0d0; w_enewion = 0d0
     w_vi_disp = 0d0; w_wf_start = 0d0; w_wf_end = 0d0; w_time_start = 0d0; w_time_end = 0d0
     nstep_win = 0
   end subroutine window_reset
@@ -128,6 +130,7 @@ contains
       w_time_start = time
       if (myrank == 0) write(*,'(a,i0)') 'ccp1d: measurement window starts with period ', iperiod + 1
     end if
+    tally_work = in_window
   end subroutine diag_window_check
   !
   !--------------------------------------------------------------------
@@ -148,6 +151,9 @@ contains
     p_work = p_work + work_step
     p_ewall = p_ewall + ewall_step
     p_nwall = p_nwall + nwall_step
+    p_nion = p_nion + n_ion_step
+    p_nexc = p_nexc + n_exc_step(1) + n_exc_step(2)
+    numax_exceed = numax_exceed + numax_exceed_step
     c_work = c_work + work_step
     do isp = 1, nsp
       c_ewall(isp) = c_ewall(isp) + ewall_step(1,isp) + ewall_step(2,isp)
@@ -178,6 +184,8 @@ contains
         w_xt(:,p,2+isp) = w_xt(:,p,2+isp) + flux
         if (isp == 1) w_xt(:,p,5) = w_xt(:,p,5) + flux*emid
       end do
+      w_pw = w_pw + work_dep
+      w_xt(:,p,7) = w_xt(:,p,7) + work_dep(:,1)
       w_phi = w_phi + phi
       w_ex = w_ex + ex
       w_xt_phi(:,p) = w_xt_phi(:,p) + phi
@@ -186,6 +194,22 @@ contains
       w_work = w_work + work_step
       w_ewall = w_ewall + ewall_step
       w_nwall = w_nwall + dble(nwall_step)
+      w_nion = w_nion + dble(n_ion_step)
+      w_nexc = w_nexc + dble(n_exc_step)
+      w_eloss_el = w_eloss_el + eloss_el_step
+      w_einel = w_einel + einel_step
+      w_egas_i = w_egas_i + egas_i_step
+      w_enewion = w_enewion + enewion_step
+      ! ionization positions -> rate profile and x-t map (CIC, per unit weight)
+      do k = 1, nion_buf
+        g1 = ion_x(k)/dx
+        j = min(int(g1), nx - 1)
+        g2 = g1 - j
+        w_ioniz(j)   = w_ioniz(j)   + (1d0 - g2)/dx
+        w_ioniz(j+1) = w_ioniz(j+1) + g2/dx
+        w_xt(j,p,6)   = w_xt(j,p,6)   + (1d0 - g2)/dx
+        w_xt(j+1,p,6) = w_xt(j+1,p,6) + g2/dx
+      end do
       ! wall energy histograms (bin k covers [(k-1) de, k de))
       do k = 1, nabs
         j = int(abs_energy(k)/(qe*iedf_de)) + 1
@@ -310,6 +334,17 @@ contains
     write(u,'(a,es14.6,a)') 'bohm_speed_initial = ', sqrt(kb*Te0/mion), '  # m/s'
     write(u,'(a,es14.6,a)') 'ion_transit_half_gap = ', 0.5d0*L/sqrt(kb*Te0/mion), '  # s'
     write(u,'(a,l1)')       'mcc_on = ', mcc_on
+    if (mcc_on) then
+      write(u,'(a)') '# ---- collisions (null-collision method) ----'
+      write(u,'(a,es14.6,a)') 'numax_e = ', numax_e, '  # s^-1'
+      write(u,'(a,es14.6,a)') 'numax_e_energy = ', enumax_e, '  # eV'
+      write(u,'(a,es14.6,a)') 'P_coll_e = ', p_coll_e, '  # per step, 1 - exp(-numax_e dt)'
+      write(u,'(a,es14.6,a)') 'numax_i = ', numax_i, '  # s^-1'
+      write(u,'(a,es14.6,a)') 'numax_i_energy = ', enumax_i, '  # eV (relative energy)'
+      write(u,'(a,es14.6,a)') 'P_coll_i = ', p_coll_i, '  # per step'
+      write(u,'(a,3f8.3,a)')  'thresholds = ', eth_e(2:4), '  # eV (exc1, exc2, ionization)'
+      write(u,'(a,es14.6,a)') 'gas_pressure = ', n_gas*kb*T_gas, '  # Pa'
+    end if
     close(u)
   end subroutine write_info_header
   !
@@ -352,7 +387,7 @@ contains
   ! end of the run: reduce the window accumulators and write everything
   subroutine diag_final()
     integer :: u, j, k, isp
-    real(8) :: twin, sc(30), fac, e, ppart(nsp), pwall(nsp), pke(nsp), pinel, pel, pje(nsp), pvi
+    real(8) :: twin, sc(30), fac, e, ppart(nsp), pwall(nsp), pke(nsp), pinel, pel, pje(nsp), pvi, pgas, pnew
     real(8) :: resid, ptot, dcen(nsp), eps_c, wpe, ld, te_eff
     real(8), allocatable :: prof(:,:)
     character(len=20) :: fn
@@ -373,6 +408,7 @@ contains
     call reduce0(w_ekd,  (nx+1)*nsp)
     call reduce0(w_ekxd, (nx+1)*nsp)
     call reduce0(w_pe,   (nx+1)*nsp)
+    call reduce0(w_pw,   (nx+1)*nsp)
     call reduce0(w_ioniz, nx+1)
     call reduce0(w_xt, (nx+1)*n_phase*nxt)
     call reduce0(w_hwall, nbin_iedf*2*nsp)
@@ -381,14 +417,16 @@ contains
     sc(1:2) = w_work; sc(3:4) = w_ewall(1:2,1); sc(5:6) = w_ewall(1:2,2)
     sc(7:8) = w_nwall(1:2,1); sc(9:10) = w_nwall(1:2,2); sc(11:12) = w_pje; sc(13) = w_vi_cond
     sc(14:15) = w_ke_start; sc(16:17) = w_ke_end; sc(18) = w_nion; sc(19:20) = w_nexc
-    sc(21) = w_eloss_el; sc(22) = w_einel
+    sc(21) = w_eloss_el; sc(22) = w_einel; sc(23) = w_egas_i; sc(24) = w_enewion
     call reduce0(sc, 30)
     if (myrank /= 0) return
     !
     fac = weight/dble(nstep_win)
     ! ---- profiles.dat ----
-    allocate(prof(0:nx,11))
+    allocate(prof(0:nx,13))
     do j = 0, nx
+      prof(j,12) = w_pw(j,1)*weight/(dble(nstep_win)*dt*dx)
+      prof(j,13) = w_pw(j,2)*weight/(dble(nstep_win)*dt*dx)
       prof(j,1) = w_dens(j,1)*fac
       prof(j,2) = w_dens(j,2)*fac
       prof(j,3) = w_phi(j)/dble(nstep_win)
@@ -404,6 +442,7 @@ contains
       if (j == 0 .or. j == nx) then
         prof(j,1:2) = 2d0*prof(j,1:2)
         prof(j,6:9) = 2d0*prof(j,6:9)
+        prof(j,12:13) = 2d0*prof(j,12:13)
       end if
     end do
     open(newunit=u, file='profiles.dat', status='replace', action='write')
@@ -411,9 +450,11 @@ contains
          ' (', nstep_win, ' steps)'
     write(u,'(a)') '# electrode nodes 0 and nx: densities, rates, J.E and flux multiplied by 2 (half-cell volume)'
     write(u,'(a)') '# 1 x[m]  2 n_e[m^-3]  3 n_i[m^-3]  4 phi[V]  5 E[V/m]  6 <eps_e>[eV]  7 ionization_rate[m^-3s^-1]'// &
-         '  8 <J_e.E>[W/m^3]  9 <J_i.E>[W/m^3]  10 <n_i v_i>[m^-2s^-1]  11 <eps_x,e>[eV]  12 <eps_i>[eV]'
+         '  8 <J_e.E>[W/m^3]  9 <J_i.E>[W/m^3]  10 <n_i v_i>[m^-2s^-1]  11 <eps_x,e>[eV]  12 <eps_i>[eV]'// &
+         '  13 P_work_e[W/m^3]  14 P_work_i[W/m^3]'
+    write(u,'(a)') '# P_work = work of the field on the particles deposited at the old positions (integrates exactly to P_part); <J.E> = grid product'
     do j = 0, nx
-      write(u,'(12es15.7)') j*dx, prof(j,1:11)
+      write(u,'(14es15.7)') j*dx, prof(j,1:13)
     end do
     close(u)
     ! ---- wall energy distributions: flux per energy interval [m^-2 s^-1 eV^-1] ----
@@ -453,6 +494,7 @@ contains
     call write_xt('xt_Ji.dat',    'J_i[A/m^2]',         w_xt(:,:,4), weight)
     call write_xt('xt_PeE.dat',   'J_e.E[W/m^3]',       w_xt(:,:,5), weight)
     call write_xt('xt_ioniz.dat', 'ionization[m^-3s^-1]', w_xt(:,:,6), weight/dt)
+    call write_xt('xt_Pe_work.dat', 'electron heating P_work_e[W/m^3] (exact work deposit)', w_xt(:,:,7), weight/(dt*dx))
     ! ---- energy balance and summary -> info.txt ----
     do isp = 1, nsp
       ppart(isp) = sc(isp)*weight/twin
@@ -462,9 +504,11 @@ contains
     end do
     pinel = sc(22)*weight/twin
     pel   = sc(21)*weight/twin
+    pgas  = sc(23)*weight/twin
+    pnew  = sc(24)*weight/twin
     pvi   = (sc(13)*weight + w_vi_disp)/dble(nstep_win)
     ptot  = ppart(1) + ppart(2)
-    resid = ptot - pwall(1) - pwall(2) - pke(1) - pke(2) - pinel - pel
+    resid = ptot + pnew - pwall(1) - pwall(2) - pke(1) - pke(2) - pinel - pel - pgas
     do isp = 1, nsp
       dcen(isp) = sum(prof(nx/2-2:nx/2+2, isp))/5d0
     end do
@@ -504,8 +548,12 @@ contains
     write(u,'(a,es14.6,a)') 'P_dKE_i = ', pke(2), '  # W/m^2'
     write(u,'(a,es14.6,a)') 'P_inelastic = ', pinel, '  # W/m^2 excitation + ionization threshold energy'
     write(u,'(a,es14.6,a)') 'P_elastic_e = ', pel, '  # W/m^2 electron elastic energy loss to the gas'
-    write(u,'(a,es14.6,a)') 'closure_residual = ', resid, '  # W/m^2  P_part - walls - dKE - inelastic - elastic'
+    write(u,'(a,es14.6,a)') 'P_gas_i = ', pgas, '  # W/m^2 ion kinetic energy lost to the gas in collisions'
+    write(u,'(a,es14.6,a)') 'P_newion = ', pnew, '  # W/m^2 thermal energy of the created ions (from the gas)'
+    write(u,'(a,es14.6,a)') 'closure_residual = ', resid, '  # W/m^2  P_part + P_newion - walls - dKE - inelastic - elastic - P_gas_i'
     write(u,'(a,es14.6,a)') 'closure_relative = ', abs(resid)/max(abs(ptot), 1d-300), '  # should be round-off'
+    write(u,'(a,es14.6,a)') 'P_work_e_integral = ', trapz(prof(:,12)), '  # W/m^2  integral of the deposited electron work (= P_part_e to round-off)'
+    write(u,'(a,es14.6,a)') 'P_work_i_integral = ', trapz(prof(:,13)), '  # W/m^2'
     write(u,'(a,es14.6,a)') 'P_JE_e = ', pje(1), '  # W/m^2  integral <J_e.E> dx'
     write(u,'(a,es14.6,a)') 'P_JE_i = ', pje(2), '  # W/m^2'
     write(u,'(a,es14.6,a)') 'P_JE_total = ', pje(1) + pje(2), '  # W/m^2'
@@ -561,8 +609,8 @@ contains
     write(u) c_work, c_ewall, numax_exceed
     write(u) in_window
     if (in_window) then
-      write(u) w_dens, w_flux, w_ekd, w_ekxd, w_pe, w_ioniz, w_xt, w_hwall, w_eepf
-      write(u) w_work, w_ewall, w_nwall, w_pje, w_vi_cond, w_ke_start, w_nion, w_nexc, w_eloss_el, w_einel
+      write(u) w_dens, w_flux, w_ekd, w_ekxd, w_pe, w_pw, w_ioniz, w_xt, w_hwall, w_eepf
+      write(u) w_work, w_ewall, w_nwall, w_pje, w_vi_cond, w_ke_start, w_nion, w_nexc, w_eloss_el, w_einel, w_egas_i, w_enewion
     end if
     close(u)
     if (myrank == 0) then
@@ -603,8 +651,8 @@ contains
     read(u) c_work, c_ewall, numax_exceed
     read(u) in_window
     if (in_window) then
-      read(u) w_dens, w_flux, w_ekd, w_ekxd, w_pe, w_ioniz, w_xt, w_hwall, w_eepf
-      read(u) w_work, w_ewall, w_nwall, w_pje, w_vi_cond, w_ke_start, w_nion, w_nexc, w_eloss_el, w_einel
+      read(u) w_dens, w_flux, w_ekd, w_ekxd, w_pe, w_pw, w_ioniz, w_xt, w_hwall, w_eepf
+      read(u) w_work, w_ewall, w_nwall, w_pje, w_vi_cond, w_ke_start, w_nion, w_nexc, w_eloss_el, w_einel, w_egas_i, w_enewion
     end if
     close(u)
     open(newunit=u, file='restart_grid.bin', status='old', access='stream', form='unformatted', action='read', iostat=ios)
@@ -618,6 +666,7 @@ contains
       read(u) w_vi_disp, w_wf_start, w_time_start
     end if
     close(u)
+    tally_work = in_window
     if (myrank == 0) then
       write(*,'(a,i0,a,es12.4,a)') 'ccp1d: restart from period ', iperiod, ' (t = ', time, ' s)'
       open(newunit=u, file='info.txt', status='old', position='append', action='write')
