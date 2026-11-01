@@ -12,6 +12,7 @@
 - 与 PLAN 的差异：history 列增加到 31（加 P_VI、T_x/T_⊥ 四列）；profiles 增加 ⟨ε_x,e⟩ 和 ⟨ε_i⟩ 两列；x–t 的 7 个文件、EEPF、IEDF 已在 M0 实现（M6 只剩画图和自洽检查）；`deposit` 的矩例程返回 rank 局部和，窗口结束时一次归约。
 - 性能：sheath 算例（2 × 65536 粒子起，54400 步）2 核 21 s；init_case1 一个周期 1.7 s → Case 1 全尺寸 1280 周期估计 **20–40 分钟**（无碰撞时），MCC 会再加一些。
 - **速度分布尾巴的不对称**（用户观察）：量化后是统计涨落。生成器检验加进 `make check-rng`：2×10⁷ 粒子的尾部计数对称到 ±2.6σ 内；1000 种子 × 6000 个样本的均值/偏度/尾部计数 z 值 rms = 1.00，+3σ 尾更重的样本 49 %；自相关 < 5×10⁻⁴；ran2 与 gfortran 内置生成器一致。附带修正：`init.f90` 的装载改成四条独立语句（Fortran 不保证参数表内函数求值顺序；gfortran 恰好从左到右，结果逐位不变）。`plot_initial.py` 的速度图加了 Poisson 误差棒和折叠尾巴图。偏度标准误要用中心矩的 sqrt(6/N)，原始三阶矩的方差是 15/N。
+- **程序流程图与讲解**：`doc/fig/program_flow.png`（`tools/draw_flow.py`，绿 = 已完成、橙 = 待做、灰 = 数据）+ `doc/program_flow.md`（逐模块的职责、算法、公式、追问；完成状态表；16 条面试速答）。
 - 下一步：M2（`xsec.f90`、`mcc.f90`、`tests/mcc/` T4–T7），然后 Case 1 测试模式 → 全尺寸。
 - 未解决：em2 的 creator 越界 bug 未修（HANDOVER §8）；Langmuir 测试的冷等离子体有网格加热（能量只报告不判定，见 tests/langmuir）。
 

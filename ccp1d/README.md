@@ -38,9 +38,9 @@ stops after N periods, `max_wall_minutes = M` stops cleanly after M minutes (bot
 | `init.f90` | random uniform loading with Maxwellian velocities, field at t = 0, leapfrog half step |
 | `main.f90` | MPI, time loop |
 | `tests/` | T1 poisson, T2 deposit, T3 random, T8 restart (bit-identical), T10 Langmuir oscillation; `random/test_tails`, `test_seeds`, `test_corr` (generator statistics, `make check-rng`) |
-| `tools/` | `plot_history.py`, `check_sheath.py`, `plot_initial.py`, `common.py` |
+| `tools/` | `plot_history.py`, `check_sheath.py`, `plot_initial.py`, `draw_flow.py`, `common.py` |
 | `inputs/` | `case1.in`, `case1_test.in`, `sheath.in`, `init_case1.in` |
-| `doc/` | `initial_conditions.md` (what is loaded at t = 0 and why, with figures) |
+| `doc/` | `program_flow.md` + `fig/program_flow.png` (module-by-module explanation with completion status), `initial_conditions.md` (what is loaded at t = 0 and why, with figures) |
 | `results/` | small result files of the reference runs (`sheath/`, `init_case1/`) |
 
 ## Output files (all ASCII, `#` headers with column names and units)
