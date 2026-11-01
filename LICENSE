@@ -1,3 +1,10 @@
+Scope: this MIT license covers ccp1d/ and the repository-level files
+(README.md, HANDOVER.md, setup.sh, .gitignore), written by Yumeng Fan.
+It does NOT cover pic/ (the em2 code), whose author and copyright holder
+is S. Matsukiyo (2012); pic/ is included for reference and as the basis
+of ccp1d, with the cleanup of October 2026 by Yumeng Fan. The cross-section
+tables in ccp1d/data/he/ are under CDLA-Permissive-2.0 (see ccp1d/data/SOURCES.md).
+
 MIT License
 
 Copyright (c) 2026 fanyumeng666
