@@ -22,3 +22,10 @@ temp[0-9].data
 *.e[0-9]*
 .DS_Store
 *~
+
+# ---- ccp1d ----
+ccp1d/ccp1d
+ccp1d/runs/
+ccp1d/**/restart_*.bin
+ccp1d/**/xt_*.dat
+ccp1d/**/*.png
