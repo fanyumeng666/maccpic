@@ -43,3 +43,4 @@ ccp1d/**/init_particles_rank*.dat
 # figures that document results are kept
 !ccp1d/doc/fig/*.png
 !ccp1d/results/**/*.png
+__pycache__/
