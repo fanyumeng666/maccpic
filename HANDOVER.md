@@ -21,12 +21,12 @@ em2（`pic/`）**不要动**，它是另一个项目；唯一的已知 bug 记�
 开头：
 
 ```sh
-git clone <仓库地址> mccpic && cd mccpic     # 已有则 git pull
+git clone https://github.com/fanyumeng666/maccpic mccpic && cd mccpic   # 已有则 git pull
 ./setup.sh                                   # 装 gfortran + Open MPI，约 1 分钟；容器每次都是新的
 cat HANDOVER.md ccp1d/PROGRESS.md
 ```
 
-如果 GitHub 没接上，代码以 `mccpic-<日期>.tar.gz` 的形式附在会话里：`tar xzf` 解开即可，里面带 `.git` 历史。
+仓库：https://github.com/fanyumeng666/maccpic （名字是 maccpic，本地目录叫 mccpic，内容一样）。如果某次会话推不上去，就把 `tar czf mccpic-<日期>.tar.gz mccpic` 打包带出来，下次 `tar xzf` 解开，里面带 `.git` 历史。
 
 结尾（不做等于白干——容器一段时间不活动就被回收，没 push 的东西全丢）：
 
