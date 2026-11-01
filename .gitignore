@@ -44,3 +44,6 @@ ccp1d/**/init_particles_rank*.dat
 !ccp1d/doc/fig/*.png
 !ccp1d/results/**/*.png
 __pycache__/
+ccp1d/tests/random/test_tails
+ccp1d/tests/random/test_seeds
+ccp1d/tests/random/test_corr

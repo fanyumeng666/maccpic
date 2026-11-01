@@ -1,6 +1,6 @@
 # ccp1d run information (key = value  # unit)
 git_commit = dbe0071
-date_start = 2026-11-01 09:09:18
+date_start = 2026-11-01 10:46:26
 nprocs = 2
 # ---- input parameters (namelist &ccp1d) ----
 L =   6.700000E-02  # m
@@ -97,5 +97,5 @@ ionizations_per_period =   0.000000E+00
 excitations_per_period =   0.000000E+00
 numax_exceeded_count = 0
 periods_done = 136
-wall_time =   2.068291E+01  # s (this segment)
-date_end = 2026-11-01 09:09:39
+wall_time =   2.048855E+01  # s (this segment)
+date_end = 2026-11-01 10:46:46

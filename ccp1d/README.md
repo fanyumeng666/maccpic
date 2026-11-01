@@ -15,6 +15,7 @@ cd ccp1d
 make                # -O3 executable ./ccp1d (objects in obj/)
 make debug          # checked executable ./ccp1d_dbg (-fcheck=all -ffpe-trap ...)
 make check          # unit tests T1-T3, T8, T10 with the debug flags (~1 min)
+make check-rng      # statistical tests of the random generator in the loading pattern (~1 min)
 mkdir -p runs/case1_test && cp inputs/case1_test.in runs/case1_test/ccp1d.in
 cd runs/case1_test && mpirun --allow-run-as-root -np 2 ../../ccp1d [input_file]
 ```
@@ -36,7 +37,7 @@ stops after N periods, `max_wall_minutes = M` stops cleanly after M minutes (bot
 | `diag.f90` | history, window averages, histograms, x-t maps, energy balance, info.txt, restart files |
 | `init.f90` | random uniform loading with Maxwellian velocities, field at t = 0, leapfrog half step |
 | `main.f90` | MPI, time loop |
-| `tests/` | T1 poisson, T2 deposit, T3 random, T8 restart (bit-identical), T10 Langmuir oscillation |
+| `tests/` | T1 poisson, T2 deposit, T3 random, T8 restart (bit-identical), T10 Langmuir oscillation; `random/test_tails`, `test_seeds`, `test_corr` (generator statistics, `make check-rng`) |
 | `tools/` | `plot_history.py`, `check_sheath.py`, `plot_initial.py`, `common.py` |
 | `inputs/` | `case1.in`, `case1_test.in`, `sheath.in`, `init_case1.in` |
 | `doc/` | `initial_conditions.md` (what is loaded at t = 0 and why, with figures) |

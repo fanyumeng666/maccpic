@@ -11,6 +11,7 @@
 - **初始条件讲解**：`doc/initial_conditions.md` + `doc/fig/init_*.png`（相空间、速度/能量分布、t=0 网格量、驱动与尺度、截面与 ν_max）+ 鞘层图；`tools/plot_initial.py` 从 `dump_initial = .true.` 的输出画图。实测随机装载的初始 φ 噪声 rms 5.7 V（长波被泊松放大），E rms 630 V/m。
 - 与 PLAN 的差异：history 列增加到 31（加 P_VI、T_x/T_⊥ 四列）；profiles 增加 ⟨ε_x,e⟩ 和 ⟨ε_i⟩ 两列；x–t 的 7 个文件、EEPF、IEDF 已在 M0 实现（M6 只剩画图和自洽检查）；`deposit` 的矩例程返回 rank 局部和，窗口结束时一次归约。
 - 性能：sheath 算例（2 × 65536 粒子起，54400 步）2 核 21 s；init_case1 一个周期 1.7 s → Case 1 全尺寸 1280 周期估计 **20–40 分钟**（无碰撞时），MCC 会再加一些。
+- **速度分布尾巴的不对称**（用户观察）：量化后是统计涨落。生成器检验加进 `make check-rng`：2×10⁷ 粒子的尾部计数对称到 ±2.6σ 内；1000 种子 × 6000 个样本的均值/偏度/尾部计数 z 值 rms = 1.00，+3σ 尾更重的样本 49 %；自相关 < 5×10⁻⁴；ran2 与 gfortran 内置生成器一致。附带修正：`init.f90` 的装载改成四条独立语句（Fortran 不保证参数表内函数求值顺序；gfortran 恰好从左到右，结果逐位不变）。`plot_initial.py` 的速度图加了 Poisson 误差棒和折叠尾巴图。偏度标准误要用中心矩的 sqrt(6/N)，原始三阶矩的方差是 15/N。
 - 下一步：M2（`xsec.f90`、`mcc.f90`、`tests/mcc/` T4–T7），然后 Case 1 测试模式 → 全尺寸。
 - 未解决：em2 的 creator 越界 bug 未修（HANDOVER §8）；Langmuir 测试的冷等离子体有网格加热（能量只报告不判定，见 tests/langmuir）。
 

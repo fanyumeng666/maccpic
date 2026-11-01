@@ -16,8 +16,9 @@ OBJD = $(patsubst %.f90,obj_dbg/%.o,$(SRC))
 LIBD = $(filter-out obj_dbg/main.o,$(OBJD))
 
 TESTS = tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_random tests/langmuir/langmuir
+RNGTESTS = tests/random/test_tails tests/random/test_seeds tests/random/test_corr
 
-.PHONY: all debug check clean version
+.PHONY: all debug check check-rng clean version
 
 all: ccp1d
 debug: ccp1d_dbg
@@ -68,5 +69,11 @@ check: ccp1d_dbg $(TESTS)
 	echo "==== tests/restart/run.sh"; sh tests/restart/run.sh || fail=1; \
 	if [ $$fail -eq 0 ]; then echo "ALL TESTS PASSED"; else echo "SOME TESTS FAILED"; exit 1; fi
 
+# slower statistical tests of the generator in the loading pattern (~1 min, optimised build)
+tests/random/test_tails tests/random/test_seeds tests/random/test_corr: tests/random/%: tests/random/%.f90 obj/random.o
+	$(FC) $(OPT) -I obj -o $@ $< obj/random.o
+check-rng: $(RNGTESTS)
+	@for t in $(RNGTESTS); do echo "==== $$t"; ./$$t; done
+
 clean:
-	rm -rf obj obj_dbg ccp1d ccp1d_dbg version.f90 $(TESTS)
+	rm -rf obj obj_dbg ccp1d ccp1d_dbg version.f90 $(TESTS) $(RNGTESTS)

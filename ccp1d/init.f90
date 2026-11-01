@@ -17,7 +17,7 @@ contains
   subroutine init_fresh()
     integer :: isp, j
     integer(8) :: nr, i
-    real(8) :: sig, xd, s, ep, temp(nsp)
+    real(8) :: sig, xd, s, ep, temp(nsp), xp, v1, v2, v3
     temp(1) = Te0; temp(2) = Ti0
     nr = np_init_total/nprocs
     if (myrank < mod(np_init_total, int(nprocs,8))) nr = nr + 1
@@ -25,7 +25,14 @@ contains
     do isp = 1, nsp
       sig = sqrt(kb*temp(isp)/m(isp))
       do i = 1, nr
-        call add_particle(isp, L*rand_u(), sig*rand_gauss(), sig*rand_gauss(), sig*rand_gauss())
+        ! separate statements: Fortran does not define the evaluation order of
+        ! function references inside one argument list, and the draw order
+        ! (x, vx, vy, vz: 7 uniforms per particle) must be reproducible
+        xp = L*rand_u()
+        v1 = sig*rand_gauss()
+        v2 = sig*rand_gauss()
+        v3 = sig*rand_gauss()
+        call add_particle(isp, xp, v1, v2, v3)
       end do
     end do
     it = 0; iperiod = 0; time = 0d0
