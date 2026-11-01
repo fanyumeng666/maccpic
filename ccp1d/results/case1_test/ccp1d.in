@@ -1,0 +1,15 @@
+! Case 1 test mode: coarse and short (minutes); shape and order of magnitude only
+&ccp1d
+  L = 0.067d0, nx = 32
+  freq = 13.56d6, V0 = 450d0
+  n_gas = 9.64d20, T_gas = 300d0
+  n0 = 2.56d14, Te0 = 30000d0, Ti0 = 300d0
+  nppc = 256
+  steps_per_period = 200
+  n_periods = 320
+  n_avg = 32
+  n_phase = 50
+  seed = 12345
+  xsec_dir = '../../data/he'
+  restart = .false., restart_every = 80
+/

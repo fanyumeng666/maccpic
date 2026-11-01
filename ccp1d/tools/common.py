@@ -56,7 +56,7 @@ def history_columns():
 
 
 def profile_columns():
-    names = ['x', 'n_e', 'n_i', 'phi', 'E', 'eps_e', 'ioniz', 'PeE', 'PiE', 'flux_i', 'eps_x_e', 'eps_i']
+    names = ['x', 'n_e', 'n_i', 'phi', 'E', 'eps_e', 'ioniz', 'PeE', 'PiE', 'flux_i', 'eps_x_e', 'eps_i', 'P_work_e', 'P_work_i']
     return {n: i for i, n in enumerate(names)}
 
 

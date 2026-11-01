@@ -95,7 +95,7 @@ def left(b, f=0.5):
 
 # ---------------- title ----------------
 ax.text(1, 65.2, 'ccp1d 功能流程图：一维有界静电 PIC-MCC（目标：Turner 等 2013 氦基准 Case 1）', fontsize=14, fontweight='bold', va='top')
-ax.text(1, 63.3, '每个方框：例程名（等宽字体）+ 它做的事。绿色实线 = 已完成并通过测试（M0、M1）；橙色虚线 = 待完成（里程碑标在右上角）；灰色 = 数据。', fontsize=9, va='top', color='#333')
+ax.text(1, 63.3, '每个方框：例程名（等宽字体）+ 它做的事。绿色实线 = 已完成并通过测试（M0、M1、M2、M4 的 Case 1 首轮）；橙色虚线 = 待完成（里程碑标在右上角）；灰色 = 数据。', fontsize=9, va='top', color='#333')
 
 # ---------------- column 1: setup ----------------
 frame(0.5, 1.2, 21.5, 60.4, '① 启动（main.f90 开头）')
@@ -103,7 +103,7 @@ A1 = box(1.3, 55.5, 20, 4.6, 'MPI_INIT / COMM_SIZE / COMM_RANK', 'nprocs 个进�
 A2 = box(1.3, 49.6, 20, 4.9, 'input: read_input', 'namelist ccp1d.in（几何、电压、气体、粒子数、步数…）\n导出 dx=L/nx, dt=1/(f·spp), w=n0L/N, maxnp', 'done')
 A3 = box(1.3, 44.2, 20, 4.4, 'random: rng_init(seed+rank)', 'ran2（L\'Ecuyer 组合 LCG + 洗牌）；Box–Muller 高斯；\n状态可存取 → 续算逐位复现', 'done')
 A4 = box(1.3, 38.6, 20, 4.6, 'allocate + poisson/push/diag _init', '粒子数组 (maxnp,2)、网格数组 (0:nx)；\nThomas 前扫系数预存；诊断累加器清零', 'done')
-A5 = box(1.3, 32.8, 20, 4.8, 'xsec: xsec_load + compute_numax', '读 6 张截面表 → 0.01 eV 均匀能量网格（线性插值）；\nν_max = max n_g σ_tot(ε) v(ε)，电子 8.65e7 s^-1', 'todo', tag='M2')
+A5 = box(1.3, 32.8, 20, 4.8, 'xsec: xsec_load + compute_numax', '读 6 张截面表 → 均匀能量网格（原点对齐表首点，线性插值精确）；\nν_max = max n_g σ_tot(ε) v(ε)，电子 8.65e7 s^-1', 'done')
 diamond(11.3, 28.7, 7.2, 3.2, 'restart = .true.?')
 A7a = box(1.3, 19.6, 9.6, 6.2, 'init: init_fresh', 'x 均匀随机，v 三分量\nMaxwell；沉积 ρ(0)，解\nφ(0)；v 回推 −dt/2\n（蛙跳起步）', 'done', lfs=7.6)
 A7b = box(11.7, 19.6, 9.6, 6.2, 'diag: restart_read', 'restart_rankNNN.bin：\n粒子、随机数状态、\n累加器；restart_grid.bin：\nφ、E、it、窗口状态', 'done', lfs=7.6)
@@ -114,7 +114,7 @@ for i, (lab, st) in enumerate([('已完成并通过测试', 'done'), ('待完成
     s = STYLE[st]
     ax.add_patch(FancyBboxPatch((1.5, 8.6 - 2.2 * i), 3.2, 1.5, boxstyle='round,pad=0.15', fc=s['fc'], ec=s['ec'], ls=s['ls'], lw=1.2))
     ax.text(5.3, 9.35 - 2.2 * i, lab, fontsize=8.5, va='center')
-ax.text(12.0, 9.6, '状态日期 2026-11-01\nM0+M1 完成，M2 起待做\n（详见 PLAN.md §3）', fontsize=8, va='top', color='#444')
+ax.text(12.0, 9.6, '状态日期 2026-11-01\nM0、M1、M2 完成，Case 1 首轮\n已对上基准；M3、M5–M7 待做', fontsize=8, va='top', color='#444')
 
 arrow(bottom(A1), top(A2)); arrow(bottom(A2), top(A3)); arrow(bottom(A3), top(A4)); arrow(bottom(A4), top(A5))
 arrow(bottom(A5), (11.3, 30.3))
@@ -131,11 +131,11 @@ B0 = box(24.5, 54.4, 37.5, 4.2, 'diag_window_check（每个周期开始）', '�
          '窗口内每步多做 deposit_species_moments、J·E、直方图、x–t 累加', 'done')
 frame(24.5, 17.0, 37.5, 36.3, '每一步 dt（时间层：步前 x、φ、E 在 t_n，v 在 t_{n-1/2}）', color='#2c5aa0')
 B1 = box(25.5, 46.0, 35.5, 5.4, 'push: push_species(1), push_species(2)', 'E_p = 线性插值；v_x += (q/m)E_p dt；x += v_x dt（v_y, v_z 不变）。x<0 或 x≥L：记能量、计数、电荷后删除（末尾粒子换入，O(1)）。\n'
-         '同时累加：做功 Σ q E_p·½(v⁻+v⁺)dt（= 动能增量，精确恒等式）、Ramo 电流 Σ q v_x、壁面动能。', 'done', lfs=7.7)
+         '同时累加：做功 Σ q E_p·½(v⁻+v⁺)dt（= 动能增量，精确恒等式；窗口内按旧位置沉积成加热剖面）、Ramo 电流 Σ q v_x、壁面动能。', 'done', lfs=7.7)
 B2 = box(25.5, 39.6, 35.5, 5.6, 'mcc: mcc_electrons', '零碰撞法：R₁ < P = 1−e^(−ν_max dt)（1.6 %）才算；按 ν_k(ε)=n_gσ_k v 的累积区间选过程，其余为空碰撞。\n'
-         '弹性 ε\'=ε[1−(2m/M)(1−cosχ)]；激发 ε−19.82/20.61；电离 (ε−24.59)/2 两电子平分，新 He⁺ 取 T_g；方向球面均匀。', 'todo', tag='M2', lfs=7.7)
+         '弹性 ε\'=ε[1−(2m/M)(1−cosχ)]；激发 ε−19.82/20.61；电离 (ε−24.59)/2 两电子平分，新 He⁺ 取 T_g；方向球面均匀。', 'done', lfs=7.7)
 B3 = box(25.5, 33.4, 35.5, 5.4, 'mcc: mcc_ions', '抽靶原子速度 v_n~Maxwell(T_g)；g=v_i−v_n，ε_rel=½μg²（μ=M/2）；ν_k = n_g σ_k(ε_rel)|g|。\n'
-         '各向同性：v_i\' = v_cm + ½|g| n̂；背向散射（=电荷交换）：v_i\' = v_n。能量账本：非弹性、弹性损失、新离子热能。', 'todo', tag='M2', lfs=7.7)
+         '各向同性：v_i\' = v_cm + ½|g| n̂；背向散射（=电荷交换）：v_i\' = v_n。能量账本：非弹性、弹性、新离子热能、离子↔气体。', 'done', lfs=7.7)
 B4 = box(25.5, 27.6, 35.5, 5.0, 'deposit: deposit_rho（窗口内 + deposit_species_moments）', 'CIC：j=⌊x/dx⌋, s=x/dx−j；ρ_j += qw(1−s)/dx，ρ_{j+1} += qw·s/dx；MPI_ALLREDUCE 求和（每步一次，nx+1 个数）。\n'
          '窗口内同样沉积 n_e、n_i、n v_x、能量密度（rank 局部累加，结束时归约一次）。', 'done', lfs=7.7)
 B5 = box(25.5, 22.4, 35.5, 4.4, 'poisson: poisson_solve(rho, V(t_{n+1}), 0)', '(φ_{j−1}−2φ_j+φ_{j+1})/dx² = −ρ_j/ε0，φ₀=V₀sin(2πf t)，φ_nx=0；Thomas 回代 O(nx)；\n'
@@ -168,23 +168,25 @@ C1 = box(66.5, 55.3, 32, 4.0, 'diag: diag_final（iperiod == n_periods）', '归
 C2 = box(66.5, 47.0, 32, 7.3, '输出文件（全部 ASCII，# 表头带单位，numpy.loadtxt 直接读）', 'profiles.dat：n_e, n_i, φ, E, ⟨ε_e⟩, 电离率, ⟨J_e·E⟩, ⟨J_i·E⟩, Γ_i, ⟨ε_x,e⟩, ⟨ε_i⟩\n'
          'iedf_left/right, eedf_left/right：壁面通量能谱  eepf.dat：F(ε), F/√ε（中心 10 %）\nxt_phi/ne/ni/Je/Ji/PeE/ioniz.dat：n_phase × (nx+1) 相位分辨图\n'
          'info.txt 结果段：中心密度、T_eff、ωpe·dt、Γ、撞击能、能量平衡三把尺 P_part / P_JE / P_VI、P_numerical', 'done', lfs=7.6)
-C3 = box(66.5, 40.4, 15.3, 5.6, 'tools/ 已有', 'plot_history.py 稳态判断\ncheck_sheath.py  T11 判据+图\nplot_initial.py  初始条件 5 张图\ndraw_flow.py     本图', 'done', lfs=7.6)
-C4 = box(83.2, 40.4, 15.3, 5.6, 'tools/ 待写', 'compare_turner.py  与基准叠画\nplot_profiles / plot_dist / plot_xt\nconvergence.py  收敛表\ncheck_run.py  13 项自检', 'todo', tag='M4–M6', lfs=7.6)
-C5 = box(66.5, 31.2, 32, 8.2, '验证已通过（make check + 物理标定）', 'T1 泊松：解析解 1e-14，二阶收敛比 4.0004，离散高斯定律 1e-13\n'
-         'T2 CIC 沉积：权重、电荷守恒 1e-16、端点半格、矩、1 与 2 rank 一致\nT3 随机数：矩、状态存取逐位；check-rng：2e7 粒子尾巴对称，6000 样本 z 值 rms 1.00\n'
-         'T8 续算：20 周期 vs 10+10 逐位相同（history、profiles、直方图、x–t）\nT10 Langmuir 振荡：频率与蛙跳理论差 3e-4\n'
-         'T11 无碰撞鞘层：能量守恒 5e-4、Γ_e=Γ_i 1.6 %、T_⊥ 不变、对称 0.14 %', 'done', lfs=7.6)
-C6 = box(66.5, 20.6, 32, 9.6, '验证待做', 'T4 截面查表 vs 原表；ν_max 回归值\nT5 MCC 频率：单能电子各过程计数 = n_gσ_k v × 0.992（3σ 内）\n'
-         'T6 MCC 运动学：能量关系 1e-12、cosχ 均匀 χ² 检验、新离子 T_g\nT7 弛豫：10 eV 离子热化到 300 K；电子弹性冷却斜率\n'
-         'T12 电子群：E/N = 50–500 Td 平均能量、漂移速度；e·E·v_d = 碰撞损失\nT13 Case 1 测试模式 13 项自检（对称、Γ_e=Γ_i、能量闭合…）\n'
-         'T14 Case 1 全尺寸：中心密度与 Turner 偏差 < 5 %（目标 2 %）\nT15 收敛：换种子噪声地板、dt/2、nx 256、nppc 256/1024\n'
-         'T16 诊断自洽（∫IEDF = Γ_i 等）  T17 双频：IEDF 随 V_lf 展宽', 'todo', tag='M2–M7', lfs=7.6)
+C3 = box(66.5, 40.4, 15.3, 5.6, 'tools/ 已有', 'plot_history / check_sheath / plot_initial\ncompare_turner.py  与基准叠画+误差\nplot_profiles / plot_dist  剖面、能谱\ncheck_run.py  13 项自检   draw_flow 本图', 'done', lfs=7.6)
+C4 = box(83.2, 40.4, 15.3, 5.6, 'tools/ 待写', 'plot_xt.py  x–t 伪彩图\nconvergence.py  收敛表\n（M5、M6）', 'todo', tag='M5–M6', lfs=7.6)
+C5 = box(66.5, 29.0, 32, 10.4, '验证已通过（make check + 物理标定 + 基准）', 'T1 泊松 1e-14、二阶收敛、高斯定律 1e-13   T2 CIC 沉积 1e-16、端点半格、1 与 2 rank 一致\n'
+         'T3 随机数 + check-rng（2e7 粒子尾巴对称，6000 样本 z 值 rms 1.00）   T8 续算逐位相同（含碰撞）\n'
+         'T4 截面查表 = 原表（电子 1e-15，离子 1e-7）；ν_max 8.654e7 / 2.793e7   T10 Langmuir 频率差 3e-4\n'
+         'T5 MCC 频率：10/30/100 eV 电子四过程、5 eV 离子两过程 = n_gσv×0.992，|z| < 1.7\n'
+         'T6 运动学：弹性/激发/电离能量关系 1e-15、各向同性 χ² 正常、新离子 T_g、离子质心系不变量\n'
+         'T7 弛豫：离子热化到 300 K 偏差 0.05 %；电子弹性冷却与 ODE 差 0.02 %   T11 无碰撞鞘层\n'
+         'T13 Case 1 自检 + T14 全尺寸：中心 n_i 1.432e14 vs 1.403e14（+2.1 %），内点 rms 1.5 %，4 核 204 s', 'done', lfs=7.4)
+C6 = box(66.5, 20.6, 32, 7.4, '验证待做', 'T12 电子群：E/N = 50–500 Td 平均能量、漂移速度；e·E·v_d = 碰撞损失（M3）\n'
+         'T15 收敛：换种子噪声地板、dt/2、nx 256、nppc 256/1024（M5）\n'
+         'T16 诊断自洽（∫IEDF = Γ_i、x–t 积分 = history）与四类图（M6）\n'
+         'T17 双频：IEDF 随 V_lf 展宽（M7）', 'todo', tag='M3,M5–M7', lfs=7.6)
 C7 = box(66.5, 12.2, 32, 7.2, 'data/（已就位）', 'he/electron_scattering, excitation_1 (19.82 eV), excitation_2 (20.61 eV), ionization (24.59 eV)：e–He，Biagi 7.1\n'
          'he/ion_scattering（各向同性）, ion_back_scatter（背向 = 电荷交换）：He⁺–He，Phelps，能量变量 ε_rel\n'
          'he/charge_exchange.dat：基准不用。格式 energy[eV] sigma[m²]，0.01 eV 间距，到 749.99 eV，超出取末值\n'
          'turner2013_case1_ni.dat：129 节点参考 n_i(x)，中心 1.405e14 m⁻³，端点 3.6e13', 'data', lfs=7.6)
 C8 = box(66.5, 4.6, 32, 6.4, '运行方式与分段', 'cd runs/case1 && mpirun --allow-run-as-root -np 2 ../../ccp1d      （输入 ccp1d.in，输出同目录）\n'
-         'Case 1：128 格，400 步/周期，1280 周期 = 512000 步，2 核估计 20–40 分钟（无碰撞时 1 周期 1.7 s）\n'
+         'Case 1：128 格，400 步/周期，1280 周期 = 512000 步，含碰撞 4 核实测 204 s（0.16 s/周期）\n'
          '长算例后台跑，max_wall_minutes 兜底，restart = .true. 接着跑；关键结果拷到 results/ 进 git', 'done', lfs=7.6)
 arrow(right(B8, 0.25), (64.8, 5.7), style='-', color='#333')
 arrow((64.8, 5.7), (64.8, 57.3), style='-', color='#333')
