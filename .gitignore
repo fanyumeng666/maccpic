@@ -29,3 +29,17 @@ ccp1d/runs/
 ccp1d/**/restart_*.bin
 ccp1d/**/xt_*.dat
 ccp1d/**/*.png
+ccp1d/ccp1d_dbg
+ccp1d/obj/
+ccp1d/obj_dbg/
+ccp1d/version.f90
+ccp1d/tests/poisson/test_poisson
+ccp1d/tests/deposit/test_deposit
+ccp1d/tests/random/test_random
+ccp1d/tests/langmuir/langmuir
+ccp1d/tests/restart/straight/
+ccp1d/tests/restart/split/
+ccp1d/**/init_particles_rank*.dat
+# figures that document results are kept
+!ccp1d/doc/fig/*.png
+!ccp1d/results/**/*.png
