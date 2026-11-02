@@ -70,3 +70,21 @@ def check_range(name, value, lo, hi, fmt='%.3e'):
     ok = lo <= value <= hi
     print('    %s %s = %s  (range %s .. %s)' % ('PASS' if ok else 'FAIL', name, fmt % value, fmt % lo, fmt % hi))
     return ok
+
+
+def expected_phase_drive(info, nph):
+    """Bin average of the drive voltage V(t) = V0 sin(2 pi f t) + V0_lf sin(2 pi f_lf t) over the
+    steps of each of the nph phase bins of the measurement window, exactly as the code bins them
+    (step it after the push has phase int(mod(it, spp) * nph / spp))."""
+    spp = int(info['steps_per_period'])
+    n_avg, n_per = int(info['n_avg']), int(info['n_periods'])
+    it = np.arange((n_per - n_avg) * spp + 1, n_per * spp + 1)
+    # phases from the step count (dt = 1/(f spp)); the printed dt has only 7 digits
+    v = info['V0'] * np.sin(2 * np.pi * it / spp)
+    if info.get('V0_lf', 0.0) != 0.0:
+        v = v + info['V0_lf'] * np.sin(2 * np.pi * it * (info['freq_lf'] / info['freq']) / spp)
+    bins = (np.mod(it, spp) * nph) // spp
+    out = np.zeros(nph)
+    for p in range(nph):
+        out[p] = v[bins == p].mean()
+    return out

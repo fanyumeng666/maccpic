@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from common import load_dat, load_info, profile_columns, run_dir_from_argv, check, check_range, QE, EPS0
+from common import load_dat, load_info, profile_columns, run_dir_from_argv, check, check_range, expected_phase_drive, QE, EPS0
 
 d = run_dir_from_argv()
 info = load_info(os.path.join(d, 'info.txt'))
@@ -64,9 +64,10 @@ ok &= check('3  <integral P_work_e dx> from xt_Pe_work / P_part_e - 1', abs(pw /
 pje = np.mean(dx * (np.sum(pee[:, 1:nx], axis=1) + 0.5 * (pee[:, 0] + pee[:, nx])))
 ok &= check('3  <integral J_e.E dx> from xt_PeE / P_JE_e - 1', abs(pje / info['P_JE_e'] - 1), tol_file)
 # phase column 0 = V(t) (bin-averaged over the steps)
-spp = int(info['steps_per_period'])
-expect = np.array([np.mean([V0 * np.sin(2 * np.pi * it / spp) for it in range(spp) if (it * nph) // spp == p]) for p in range(nph)])
-ok &= check('3  xt_phi(:,0) = V(t) averaged over the steps of each bin, relative', np.max(np.abs(phi[:, 0] - expect)) / V0, 1e-6)
+Vmax = V0 + abs(info.get('V0_lf', 0.0))
+expect = expected_phase_drive(info, nph)
+ok &= check('3  xt_phi(:,0) = V(t) averaged over the steps of each bin, relative', np.max(np.abs(phi[:, 0] - expect)) / Vmax, 1e-6)
+dual = info.get('V0_lf', 0.0) != 0.0
 # ---- 4 total current J_e + J_i + eps0 dE/dt uniform in x at every phase ----
 E = -np.gradient(phi, dx, axis=1)
 dEdt = (np.roll(E, -1, axis=0) - np.roll(E, 1, axis=0)) / (2 * T / nph)
@@ -83,8 +84,11 @@ sr = np.array([x[np.nonzero(r[p] >= 0.5)[0][-1]] for p in range(nph)])
 print('       sheath edge (n_e/n_i = 0.5): left %.2f-%.2f cm, right %.2f-%.2f cm' % (sl.min() * 1e2, sl.max() * 1e2, sr.min() * 1e2, sr.max() * 1e2))
 ok &= check('5  left sheath oscillates (excursion in cells)', -(sl.max() - sl.min()) / dx, -2.0)
 ph_l = t[np.argmax(sl)]; ph_r = t[np.argmin(sr)]
-ok &= check('5  |phase of the widest left sheath - 0.75| (V = -V0 at t/T = 0.75)', min(abs(ph_l - 0.75), 1 - abs(ph_l - 0.75)), 0.15)
-ok &= check('5  |phase of the widest right sheath - 0.25| (plasma potential highest at t/T = 0.25)', min(abs(ph_r - 0.25), 1 - abs(ph_r - 0.25)), 0.15)
+if dual:
+    print('       dual frequency: widest left sheath at t/T = %.2f, right at %.2f (phase test applies to one frequency only)' % (ph_l, ph_r))
+else:
+    ok &= check('5  |phase of the widest left sheath - 0.75| (V = -V0 at t/T = 0.75)', min(abs(ph_l - 0.75), 1 - abs(ph_l - 0.75)), 0.15)
+    ok &= check('5  |phase of the widest right sheath - 0.25| (plasma potential highest at t/T = 0.25)', min(abs(ph_r - 0.25), 1 - abs(ph_r - 0.25)), 0.15)
 # ---- 6 electron heating peaks within the sheath-edge excursion ----
 pw_prof = prof[:, pc['P_work_e']]
 mid = nx // 2
@@ -98,12 +102,12 @@ iedf, _ = load_dat(os.path.join(d, 'iedf_left.dat'))
 emax = iedf[np.nonzero(iedf[:, 1])[0][-1], 0]
 print('       time-averaged plasma potential %.1f V; mean ion impact energy %.1f eV; maximum %.0f eV' % (phic, info['E_i_mean_left'], emax))
 ok &= check_range('7  mean ion impact energy / e phi_c (collisional sheath: well below 1)', info['E_i_mean_left'] / phic, 0.05, 1.0)
-ok &= check_range('7  maximum ion impact energy / V0', emax / V0, 0.3, 1.1)
+ok &= check_range('7  maximum ion impact energy / (V0 + V0_lf)', emax / Vmax, 0.3, 1.1)
 
 fig, ax = plt.subplots(2, 2, figsize=(13, 9))
 a = ax[0, 0]
 a.plot(t, sl * 1e2, label='left edge'); a.plot(t, L * 1e2 - sr * 1e2, label='right edge (distance from x = L)')
-a2 = a.twinx(); a2.plot(t, V0 * np.sin(2 * np.pi * t), 'k:', lw=0.8); a2.set_ylabel('$\\phi(0,t)$ [V]')
+a2 = a.twinx(); a2.plot(t, expect, 'k:', lw=0.8); a2.set_ylabel('$\\phi(0,t)$ [V] (bin average)')
 a.set_xlabel('t / T'); a.set_ylabel('sheath thickness [cm]'); a.legend(fontsize=8); a.set_title('sheath edges (n$_e$/n$_i$ = 0.5) over the RF period', fontsize=10)
 a = ax[0, 1]
 for p in range(0, nph, nph // 8):
@@ -122,7 +126,7 @@ a = ax[1, 1]
 a.plot(iedf[:, 0], iedf[:, 1], label='IEDF, x = 0')
 a.axvline(info['E_i_mean_left'], color='gray', ls='--', label='mean %.0f eV' % info['E_i_mean_left'])
 a.axvline(phic, color='r', ls=':', label='e <$\\phi_c$> = %.0f eV' % phic)
-a.set_xlim(0, 1.05 * V0); a.set_xlabel('ion energy [eV]'); a.set_ylabel('m$^{-2}$ s$^{-1}$ eV$^{-1}$'); a.legend(fontsize=8)
+a.set_xlim(0, 1.05 * Vmax); a.set_xlabel('ion energy [eV]'); a.set_ylabel('m$^{-2}$ s$^{-1}$ eV$^{-1}$'); a.legend(fontsize=8)
 a.set_title('IEDF: charge-exchange peaks, maximum %.0f eV' % emax, fontsize=10)
 fig.suptitle('diagnostic self-consistency (T16): ' + os.path.abspath(d), fontsize=10)
 fig.tight_layout()

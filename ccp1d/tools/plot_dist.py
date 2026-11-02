@@ -21,8 +21,9 @@ a.plot(il[:, 0], il[:, 1], label='x = 0 (driven)')
 a.plot(ir[:, 0], ir[:, 1], label='x = L (grounded)')
 mean_l = np.sum(il[:, 0] * il[:, 1]) / max(np.sum(il[:, 1]), 1e-300)
 a.axvline(mean_l, color='gray', ls='--', lw=0.8, label='mean %.0f eV' % mean_l)
-a.set_xlim(0, 1.1 * info['V0']); a.set_xlabel('ion energy [eV]'); a.set_ylabel('flux per eV [m$^{-2}$ s$^{-1}$ eV$^{-1}$]')
-a.set_title('IEDF at the electrodes (V$_0$ = %.0f V)' % info['V0']); a.legend(fontsize=8)
+vmax = info['V0'] + abs(info.get('V0_lf', 0.0))
+a.set_xlim(0, 1.1 * vmax); a.set_xlabel('ion energy [eV]'); a.set_ylabel('flux per eV [m$^{-2}$ s$^{-1}$ eV$^{-1}$]')
+a.set_title('IEDF at the electrodes (V$_0$ = %.0f V, V$_{lf}$ = %.0f V)' % (info['V0'], info.get('V0_lf', 0.0))); a.legend(fontsize=8)
 a = ax[1]
 m = el[:, 1] > 0
 a.semilogy(el[m, 0], el[m, 1], '.', ms=3, label='x = 0')

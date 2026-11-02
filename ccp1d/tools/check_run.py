@@ -4,7 +4,7 @@ Default tolerances are for the test mode (nx = 32); --full uses the full-size on
 import os
 import sys
 import numpy as np
-from common import load_dat, load_info, history_columns, profile_columns, check, check_range, QE
+from common import load_dat, load_info, history_columns, profile_columns, check, check_range, expected_phase_drive, QE
 
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 full = '--full' in sys.argv
@@ -38,12 +38,11 @@ ok &= check_range('3  (N_i - N_e)/N_i (positive: the sheaths hold ions only)', r
 # 4 phi(0, t) = V0 sin(2 pi f t) from xt_phi
 xt, hdr = load_dat(os.path.join(d, 'xt_phi.dat'))
 nph = xt.shape[0]
-spp = int(info['steps_per_period'])
 V0 = info['V0']
-# phase bin p holds the steps it with int(mod(it, spp) * nph / spp) == p, i.e. phases it/spp
-expect = np.array([np.mean([V0 * np.sin(2 * np.pi * it / spp) for it in range(spp) if (it * nph) // spp == p]) for p in range(nph)])
-err = np.max(np.abs(xt[:, 0] - expect)) / V0
-ok &= check('4  phi(0,t) vs V0 sin(2 pi t/T) averaged over the steps of each phase bin, relative', err, 1e-6)   # files carry 7 digits
+Vmax = V0 + abs(info.get('V0_lf', 0.0))          # largest electrode voltage (dual frequency: both terms)
+expect = expected_phase_drive(info, nph)
+err = np.max(np.abs(xt[:, 0] - expect)) / Vmax
+ok &= check('4  phi(0,t) vs the drive averaged over the steps of each phase bin, relative', err, 1e-6)   # files carry 7 digits
 # 5 centre density vs Turner
 x = prof[:, pc['x']]; ni = prof[:, pc['n_i']]; ne = prof[:, pc['n_e']]
 mid = len(x) // 2
@@ -60,8 +59,8 @@ ok &= check('7  |Gamma_i,left/Gamma_i,right - 1|', abs(info['Gamma_i_left'] / in
 iedf, _ = load_dat(os.path.join(d, 'iedf_left.dat'))
 e_bin, f = iedf[:, 0], iedf[:, 1]
 emax = e_bin[np.nonzero(f)[0][-1]] if np.any(f > 0) else 0.0
-ok &= check('8  max ion impact energy - V0 [eV]', emax - V0, 50.0)
-ok &= check_range('8  mean ion impact energy / V0 (left)', info['E_i_mean_left'] / V0, 0.1, 0.6)
+ok &= check('8  max ion impact energy - (V0 + V0_lf) [eV]', emax - Vmax, 50.0)
+ok &= check_range('8  mean ion impact energy / (V0 + V0_lf) (left)', info['E_i_mean_left'] / Vmax, 0.1, 0.6)
 # 9 electron energy at the centre
 ok &= check_range('9  <eps_e> centre [eV]', info['eps_e_center'], 3.0, 20.0)
 # 10 energy bookkeeping and the three powers
