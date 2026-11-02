@@ -9,7 +9,9 @@ Case 1 run (`results/case1/`) agrees with the Turner et al. reference to +2.1 % 
 changes the profile by less than twice the seed-to-seed noise (`results/conv/`, `tools/convergence.py`).
 The diagnostics (IEDF/EEPF, x-t maps, power budget, energy balance) pass 23 self-consistency checks
 (`tools/check_diag.py`); the total current J_e + J_i + eps0 dE/dt is uniform in x to 1.7 %.
-Next: swarm test (M3), dual frequency (M7).
+Dual frequency (M7, `results/dual/`): adding 1.356 MHz at 50-150 V raises the maximum ion energy from
+240 to 298 eV (always about half of V0 + V_lf) while the centre density falls by 9-45 %; at 200 V the
+sheaths fill the 6.7 cm gap and the discharge extinguishes. Next: swarm test (M3).
 
 ![Case 1 versus Turner et al. 2013](results/case1/compare_turner.png)
 
@@ -46,10 +48,10 @@ stops after N periods, `max_wall_minutes = M` stops cleanly after M minutes (bot
 | `xsec.f90` | cross-section tables on uniform energy grids (knots aligned with the tables), thresholds, nu_max |
 | `mcc.f90` | null-collision Monte Carlo: electron elastic/excitation/ionization, ion isotropic/backward (charge exchange), energy ledgers |
 | `tests/` | T1 poisson, T2 deposit, T3 random, T4 xsec, T5-T7 mcc (rates, kinematics, relaxation), T8 restart (bit-identical, with collisions), T10 Langmuir; `make check-rng` generator statistics |
-| `tools/` | `compare_turner.py` (benchmark comparison), `convergence.py` (T15), `check_run.py` (13 sanity checks), `check_diag.py` (T16, 23 self-consistency checks), `plot_xt.py`, `plot_power.py`, `plot_history.py`, `plot_profiles.py`, `plot_dist.py`, `check_sheath.py`, `plot_initial.py`, `draw_flow.py`, `common.py` |
-| `inputs/` | `case1.in` (full size), `case1_test.in` (nx = 32, minutes), `sheath.in`, `init_case1.in` |
+| `tools/` | `compare_turner.py` (benchmark comparison), `convergence.py` (T15), `dual_frequency.py` (T17), `check_run.py` (13 sanity checks), `check_diag.py` (T16, 23 self-consistency checks), `plot_xt.py`, `plot_power.py`, `plot_history.py`, `plot_profiles.py`, `plot_dist.py`, `check_sheath.py`, `plot_initial.py`, `draw_flow.py`, `common.py` |
+| `inputs/` | `case1.in` (full size), `case1_test.in` (nx = 32, minutes), `dual_*.in` (dual frequency), `sheath.in`, `init_case1.in` |
 | `doc/` | `program_flow.md` + `fig/program_flow.png` (module-by-module explanation with completion status), `initial_conditions.md` (what is loaded at t = 0 and why, with figures) |
-| `results/` | small result files of the reference runs (`case1/`, `conv/` convergence set, `case1_test/`, `sheath/`, `init_case1/`) |
+| `results/` | small result files of the reference runs (`case1/`, `conv/` convergence set, `dual/` dual-frequency series, `case1_test/`, `sheath/`, `init_case1/`) |
 
 ## Output files (all ASCII, `#` headers with column names and units)
 

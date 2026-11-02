@@ -1,0 +1,21 @@
+! M7 dual frequency, V_lf = 100 V, with the LOW frequency as the primary period so that the x-t maps
+! resolve the low-frequency cycle: the drive is symmetric in the two terms, the "period" only sets
+! dt (= 1/(1.356 MHz * 4000) = Case 1 dt), the history cadence and the phase binning (1000 bins,
+! 4 steps each, 100 bins per HF cycle). 128 LF periods = 1280 HF periods; window 4 LF periods.
+&ccp1d
+  L = 0.067d0, nx = 128
+  freq = 1.356d6, V0 = 100d0
+  freq_lf = 13.56d6, V0_lf = 450d0
+  n_gas = 9.64d20, T_gas = 300d0
+  n0 = 2.56d14, Te0 = 30000d0, Ti0 = 300d0
+  nppc = 512
+  steps_per_period = 4000
+  n_periods = 128
+  n_avg = 4
+  n_phase = 1000
+  seed = 12345
+  xsec_dir = '../../../data/he'
+  restart = .false., restart_every = 16
+  iedf_emax = 1000d0, iedf_de = 1d0
+  max_wall_minutes = 100d0
+/

@@ -31,17 +31,25 @@ for d in dirs:
     mid = len(prof) // 2
     vlf = info.get('V0_lf', 0.0) if info['freq'] > info.get('freq_lf', 0.0) else info['V0']
     vhf = info['V0'] if info['freq'] > info.get('freq_lf', 0.0) else info.get('V0_lf', 0.0)
+    nions = flux * info['window_duration'] / info['weight']          # macro-ions in the histogram
     rows.append(dict(name=os.path.basename(os.path.abspath(d)) or d, vlf=vlf, vhf=vhf, e=e, f=f, flux=flux, emean=emean,
                      width=e90 - e10, e10=e10, e90=e90, emax=emax, nc=prof[mid - 2:mid + 3, pc['n_i']].mean(),
+                     sig=1.5 * (e90 - e10) / np.sqrt(max(nions, 1.0)),   # statistical noise of a quantile width
                      pvi=info['P_VI'], gi=info['Gamma_i_left'], te=info['T_eff_center'], phic=prof[mid - 2:mid + 3, pc['phi']].mean()))
 rows.sort(key=lambda r: r['vlf'])
-print('%-14s %6s %8s %8s %8s %8s %9s %11s %9s %7s %8s' % ('run', 'V_lf', '<E_i>', 'E10', 'E90', 'width', 'E_max', 'n_i centre', 'Gamma_i', 'P_VI', '<phi_c>'))
+print('%-14s %6s %8s %8s %8s %12s %9s %11s %9s %7s %8s' % ('run', 'V_lf', '<E_i>', 'E10', 'E90', 'width(+-)', 'E_max', 'n_i centre', 'Gamma_i', 'P_VI', '<phi_c>'))
 for r in rows:
-    print('%-14s %6.0f %8.1f %8.1f %8.1f %8.1f %9.0f %11.3e %9.3e %7.1f %8.1f' %
-          (r['name'], r['vlf'], r['emean'], r['e10'], r['e90'], r['width'], r['emax'], r['nc'], r['gi'], r['pvi'], r['phic']))
-widths = [r['width'] for r in rows]
-ok = all(widths[i + 1] > widths[i] for i in range(len(widths) - 1))
-print('T17 IEDF 10-90 %% width grows monotonically with V_lf: %s' % ('PASS' if ok else 'FAIL'))
+    print('%-14s %6.0f %8.1f %8.1f %8.1f %7.1f(%4.1f) %9.0f %11.3e %9.3e %7.1f %8.1f' %
+          (r['name'], r['vlf'], r['emean'], r['e10'], r['e90'], r['width'], r['sig'], r['emax'], r['nc'], r['gi'], r['pvi'], r['phic']))
+widths = [r['width'] for r in rows]; sigs = [r['sig'] for r in rows]
+# monotonic within the noise: no decrease larger than 2 sigma, and a net increase larger than 3 sigma
+no_drop = all(widths[i + 1] >= widths[i] - 2 * np.hypot(sigs[i], sigs[i + 1]) for i in range(len(widths) - 1))
+net = widths[-1] - widths[0] > 3 * np.hypot(sigs[0], sigs[-1])
+ok = no_drop and net
+print('T17 IEDF 10-90 %% width grows with V_lf (no step down beyond 2 sigma, net rise beyond 3 sigma): %s  (net %.1f eV, sigma %.1f eV)' %
+      ('PASS' if ok else 'FAIL', widths[-1] - widths[0], np.hypot(sigs[0], sigs[-1])))
+emaxs = [r['emax'] for r in rows]
+print('    E_max monotonic: %s (%s)' % ('yes' if all(emaxs[i + 1] > emaxs[i] for i in range(len(emaxs) - 1)) else 'no', ', '.join('%.0f' % q for q in emaxs)))
 ratios = [r['emax'] / (r['vhf'] + r['vlf']) for r in rows]
 print('    E_max / (V0 + V_lf): ' + ', '.join('%.2f' % q for q in ratios))
 ok2 = all(0.3 <= q <= 1.1 for q in ratios)

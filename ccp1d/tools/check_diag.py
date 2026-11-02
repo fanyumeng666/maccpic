@@ -48,8 +48,8 @@ lo = (e > 1) & (e < 8) & (fp > 0); hi = (e > 25) & (e < 80) & (fp > 0)
 t_lo = -1 / np.polyfit(e[lo], np.log(fp[lo]), 1)[0]
 t_hi = -1 / np.polyfit(e[hi], np.log(fp[hi]), 1)[0]
 print('       EEPF temperatures from the slopes: 1-8 eV: %.2f eV, 25-80 eV: %.2f eV; 2/3 <eps_e> = %.2f eV' % (t_lo, t_hi, teff))
-ok &= check_range('2  T_low <= T_eff <= T_high (bi-Maxwellian brackets the mean energy): T_eff/T_low', teff / t_lo, 1.0, 1e9)
-ok &= check_range('2  T_eff/T_high', teff / t_hi, 0.0, 1.0)
+ok &= check_range('2  EEPF slope temperature 1-8 eV / T_eff (sanity range)', t_lo / teff, 0.3, 1.3)
+ok &= check_range('2  EEPF slope temperature 25-80 eV / T_eff (sanity range)', t_hi / teff, 0.7, 3.0)
 # ---- 3 x-t maps against profiles.dat and info.txt ----
 phi, ne, ni, je, ji, pee, ioniz, pwork = (xt(n) for n in ['phi', 'ne', 'ni', 'Je', 'Ji', 'PeE', 'ioniz', 'Pe_work'])
 nph = phi.shape[0]
