@@ -3,11 +3,13 @@
 Fortran 90 + MPI. Target: the helium benchmark of Turner et al., Phys. Plasmas 20, 013507 (2013), Case 1.
 Specification: [`../HANDOVER.md`](../HANDOVER.md); plan and test matrix: [`PLAN.md`](PLAN.md); progress: [`PROGRESS.md`](PROGRESS.md).
 
-**Status (2026-11-01): M0, M1, M2, M4, M5 done.** The time-averaged ion density of the full-size
+**Status (2026-11-02): M0, M1, M2, M4, M5, M6 done.** The time-averaged ion density of the full-size
 Case 1 run (`results/case1/`) agrees with the Turner et al. reference to +2.1 % at the centre and
 1.5 % rms over the gap (4 ranks, 170 s). Halving dt, halving dx or doubling the particles per cell
 changes the profile by less than twice the seed-to-seed noise (`results/conv/`, `tools/convergence.py`).
-Next: x-t figures and diagnostic self-consistency (M6), swarm test (M3), dual frequency (M7).
+The diagnostics (IEDF/EEPF, x-t maps, power budget, energy balance) pass 23 self-consistency checks
+(`tools/check_diag.py`); the total current J_e + J_i + eps0 dE/dt is uniform in x to 1.7 %.
+Next: swarm test (M3), dual frequency (M7).
 
 ![Case 1 versus Turner et al. 2013](results/case1/compare_turner.png)
 
@@ -44,7 +46,7 @@ stops after N periods, `max_wall_minutes = M` stops cleanly after M minutes (bot
 | `xsec.f90` | cross-section tables on uniform energy grids (knots aligned with the tables), thresholds, nu_max |
 | `mcc.f90` | null-collision Monte Carlo: electron elastic/excitation/ionization, ion isotropic/backward (charge exchange), energy ledgers |
 | `tests/` | T1 poisson, T2 deposit, T3 random, T4 xsec, T5-T7 mcc (rates, kinematics, relaxation), T8 restart (bit-identical, with collisions), T10 Langmuir; `make check-rng` generator statistics |
-| `tools/` | `compare_turner.py` (benchmark comparison), `convergence.py` (T15), `check_run.py` (13 sanity checks), `plot_history.py`, `plot_profiles.py`, `plot_dist.py`, `check_sheath.py`, `plot_initial.py`, `draw_flow.py`, `common.py` |
+| `tools/` | `compare_turner.py` (benchmark comparison), `convergence.py` (T15), `check_run.py` (13 sanity checks), `check_diag.py` (T16, 23 self-consistency checks), `plot_xt.py`, `plot_power.py`, `plot_history.py`, `plot_profiles.py`, `plot_dist.py`, `check_sheath.py`, `plot_initial.py`, `draw_flow.py`, `common.py` |
 | `inputs/` | `case1.in` (full size), `case1_test.in` (nx = 32, minutes), `sheath.in`, `init_case1.in` |
 | `doc/` | `program_flow.md` + `fig/program_flow.png` (module-by-module explanation with completion status), `initial_conditions.md` (what is loaded at t = 0 and why, with figures) |
 | `results/` | small result files of the reference runs (`case1/`, `conv/` convergence set, `case1_test/`, `sheath/`, `init_case1/`) |
