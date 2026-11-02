@@ -35,7 +35,7 @@ a = ax[2]
 m = ep[:, 2] > 0
 a.semilogy(ep[m, 0], ep[m, 2], '.', ms=3, label='central 10 %')
 # Maxwellian with the centre T_eff for reference
-te = info.get('T_eff_center', 3.0)
+te = max(info.get('T_eff_center', 3.0), 1e-3)
 ne = info.get('n_e_center', 1e14)
 e = ep[:, 0]
 a.semilogy(e, ne * 2 / np.sqrt(np.pi) * te**-1.5 * np.exp(-e / te), 'k--', lw=1, label='Maxwellian, T = %.2f eV' % te)

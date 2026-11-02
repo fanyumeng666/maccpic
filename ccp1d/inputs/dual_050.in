@@ -1,0 +1,19 @@
+! M7 dual frequency: Case 1 plus a low-frequency component f/10 = 1.356 MHz, V_lf = 50 V.
+! The measurement window (40 HF periods = 4 LF periods) and restart_every are multiples of 10.
+&ccp1d
+  L = 0.067d0, nx = 128
+  freq = 13.56d6, V0 = 450d0
+  freq_lf = 1.356d6, V0_lf = 50d0
+  n_gas = 9.64d20, T_gas = 300d0
+  n0 = 2.56d14, Te0 = 30000d0, Ti0 = 300d0
+  nppc = 512
+  steps_per_period = 400
+  n_periods = 1280
+  n_avg = 40
+  n_phase = 100
+  seed = 12345
+  xsec_dir = '../../data/he'
+  restart = .false., restart_every = 160
+  iedf_emax = 1000d0, iedf_de = 1d0
+  max_wall_minutes = 100d0
+/

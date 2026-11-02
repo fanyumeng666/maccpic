@@ -27,10 +27,13 @@ def xt(name):
 
 
 # ---- 1 wall energy distributions integrate to the fluxes in info.txt ----
+if info.get('Gamma_i_left', 0.0) <= 0 or info.get('n_e_center', 0.0) <= 0:
+    print('    FAIL 0  no plasma in the measurement window (zero ion flux or density): checks not meaningful')
+    raise SystemExit(1)
 for f, key in [('iedf_left', 'Gamma_i_left'), ('iedf_right', 'Gamma_i_right'), ('eedf_left', 'Gamma_e_left'), ('eedf_right', 'Gamma_e_right')]:
     a, _ = load_dat(os.path.join(d, f + '.dat'))
     de = a[1, 0] - a[0, 0]
-    ok &= check('1  integral of %s / %s - 1' % (f, key), abs(np.sum(a[:, 1]) * de / info[key] - 1), tol_file)
+    ok &= check('1  integral of %s / %s - 1' % (f, key), abs(np.sum(a[:, 1]) * de / max(info[key], 1e-300) - 1), tol_file)
 # ---- 2 EEPF normalisation: integral F deps = n_e in the central 10 % ----
 ep, _ = load_dat(os.path.join(d, 'eepf.dat'))
 de = ep[1, 0] - ep[0, 0]

@@ -30,10 +30,13 @@ worst = 0
 for name in ['N_e', 'N_i', 'n_i_center']:
     y = h[-k:, c[name]]
     slope = np.polyfit(p, y, 1)[0]
-    worst = max(worst, abs(slope * 100 / y.mean()))
+    worst = max(worst, abs(slope * 100 / max(y.mean(), 1e-300)))
 ok &= check('2  max drift of N_e, N_i, n_i_c over the last 20 % (fraction per 100 periods)', worst, tol_drift)
 # 3 charge imbalance: sheaths make N_i > N_e, by a few to ~15 %
-r = (h[-1, c['N_i']] - h[-1, c['N_e']]) / h[-1, c['N_i']]
+r = (h[-1, c['N_i']] - h[-1, c['N_e']]) / max(h[-1, c['N_i']], 1.0)
+if h[-1, c['N_e']] == 0:
+    print('    FAIL 0  the plasma is extinguished (N_e = 0 at the end): the remaining checks are not meaningful')
+    ok = False
 ok &= check_range('3  (N_i - N_e)/N_i (positive: the sheaths hold ions only)', r, 0.0, 0.6)
 # 4 phi(0, t) = V0 sin(2 pi f t) from xt_phi
 xt, hdr = load_dat(os.path.join(d, 'xt_phi.dat'))
@@ -53,28 +56,30 @@ nl, nr = np.trapezoid(ni[:mid + 1], x[:mid + 1]), np.trapezoid(ni[mid:], x[mid:]
 ok &= check('6  |N_i,left - N_i,right|/(N_i,left + N_i,right)', abs(nl - nr) / (nl + nr), tol_asym)
 # 7 flux balance per electrode and left/right
 for side in ['left', 'right']:
-    ok &= check('7  |Gamma_e/Gamma_i - 1| ' + side, abs(info['Gamma_e_' + side] / info['Gamma_i_' + side] - 1), tol_flux)
-ok &= check('7  |Gamma_i,left/Gamma_i,right - 1|', abs(info['Gamma_i_left'] / info['Gamma_i_right'] - 1), tol_flux)
+    ok &= check('7  |Gamma_e/Gamma_i - 1| ' + side, abs(info['Gamma_e_' + side] / max(info['Gamma_i_' + side], 1e-300) - 1), tol_flux)
+ok &= check('7  |Gamma_i,left/Gamma_i,right - 1|', abs(info['Gamma_i_left'] / max(info['Gamma_i_right'], 1e-300) - 1), tol_flux)
 # 8 ion impact energies
 iedf, _ = load_dat(os.path.join(d, 'iedf_left.dat'))
 e_bin, f = iedf[:, 0], iedf[:, 1]
 emax = e_bin[np.nonzero(f)[0][-1]] if np.any(f > 0) else 0.0
 ok &= check('8  max ion impact energy - (V0 + V0_lf) [eV]', emax - Vmax, 50.0)
-ok &= check_range('8  mean ion impact energy / (V0 + V0_lf) (left)', info['E_i_mean_left'] / Vmax, 0.1, 0.6)
+ok &= check_range('8  mean ion impact energy / (V0 + V0_lf) (left)', info.get('E_i_mean_left', 0.0) / Vmax, 0.1, 0.6)
 # 9 electron energy at the centre
 ok &= check_range('9  <eps_e> centre [eV]', info['eps_e_center'], 3.0, 20.0)
 # 10 energy bookkeeping and the three powers
 ok &= check('10 closure_relative (bookkeeping identity)', info['closure_relative'], tol_clos)
-ok &= check('10 |P_work integral / P_part - 1| (exact work deposit; info.txt has 7 digits)', abs((info['P_work_e_integral'] + info['P_work_i_integral']) / info['P_part_total'] - 1), 2e-6)
-print('       grid J.E: P_JE_e/P_part_e = %.3f, P_JE_i/P_part_i = %.3f (centering error of the grid product, information only)' %
-      (info['P_JE_e'] / info['P_part_e'], info['P_JE_i'] / info['P_part_i']))
-ok &= check('10 |P_VI/P_part - 1|', abs(info['P_VI'] / info['P_part_total'] - 1), tol_pow)
+ptot = info['P_part_total'] if info['P_part_total'] != 0 else 1e-300
+ok &= check('10 |P_work integral / P_part - 1| (exact work deposit; info.txt has 7 digits)', abs((info['P_work_e_integral'] + info['P_work_i_integral']) / ptot - 1), 2e-6)
+if info['P_part_e'] != 0 and info['P_part_i'] != 0:
+    print('       grid J.E: P_JE_e/P_part_e = %.3f, P_JE_i/P_part_i = %.3f (centering error of the grid product, information only)' %
+          (info['P_JE_e'] / info['P_part_e'], info['P_JE_i'] / info['P_part_i']))
+ok &= check('10 |P_VI/P_part - 1|', abs(info['P_VI'] / ptot - 1), tol_pow)
 ok &= check('10 P_numerical_relative (energy error of the scheme)', info['P_numerical_relative'], tol_pow)
 # 11 null-collision guard
 ok &= check('11 numax exceeded count', info['numax_exceeded_count'], 0)
 # 12 ionization balance: ionizations per period vs ion losses per period
 loss = (info['Gamma_i_left'] + info['Gamma_i_right']) * info['period'] / info['weight']
-ok &= check('12 |ionizations per period / ion losses per period - 1|', abs(info['ionizations_per_period'] / loss - 1), tol_flux)
+ok &= check('12 |ionizations per period / ion losses per period - 1|', abs(info['ionizations_per_period'] / max(loss, 1e-300) - 1), tol_flux)
 # 13 timing
 print('    13 wall time: %.1f s for %d periods (%.3f s/period), %d ranks' %
       (h[-1, c['wall']], int(h[-1, c['period']]), h[-1, c['wall']] / max(1, h[-1, c['period']]), info['nprocs']))
