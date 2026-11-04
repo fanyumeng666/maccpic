@@ -19,7 +19,7 @@ TESTS = tests/poisson/test_poisson tests/deposit/test_deposit tests/random/test_
         tests/mcc/test_xsec tests/mcc/test_mcc
 RNGTESTS = tests/random/test_tails tests/random/test_seeds tests/random/test_corr
 
-.PHONY: all debug check check-rng clean version
+.PHONY: all debug check check-rng check-swarm clean version
 
 all: ccp1d
 debug: ccp1d_dbg
@@ -78,5 +78,14 @@ tests/random/test_tails tests/random/test_seeds tests/random/test_corr: tests/ra
 check-rng: $(RNGTESTS)
 	@for t in $(RNGTESTS); do echo "==== $$t"; ./$$t; done
 
+# T12 electron swarm (optimised build, ~6 min) against the two-term Boltzmann solver
+tests/swarm/swarm: tests/swarm/swarm.f90 $(filter-out obj/main.o,$(OBJ))
+	$(FC) $(OPT) -I obj -o $@ $< $(filter-out obj/main.o,$(OBJ))
+check-swarm: tests/swarm/swarm
+	mkdir -p results/swarm
+	$(MPIRUN) -np 1 ./tests/swarm/swarm results/swarm data/he
+	python3 tools/boltzmann2term.py results/swarm
+	python3 tools/compare_swarm.py results/swarm
+
 clean:
-	rm -rf obj obj_dbg ccp1d ccp1d_dbg version.f90 $(TESTS) $(RNGTESTS)
+	rm -rf obj obj_dbg ccp1d ccp1d_dbg version.f90 $(TESTS) $(RNGTESTS) tests/swarm/swarm
