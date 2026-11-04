@@ -5,7 +5,9 @@ Specification: [`../HANDOVER.md`](../HANDOVER.md); plan and test matrix: [`PLAN.
 
 **Status (2026-11-04): all milestones M0-M7 done.** The time-averaged ion density of the full-size
 Case 1 run (`results/case1/`) agrees with the Turner et al. reference to +2.1 % at the centre and
-1.5 % rms over the gap (4 ranks, 170 s); the electron and ion power and the ion current of Turner's Table III are reproduced to 0.7 % (`tools/compare_table3.py`). Halving dt, halving dx or doubling the particles per cell
+1.5 % rms over the gap (4 ranks, 170 s); the electron and ion power and the ion current of Turner's Table III are reproduced to 0.7 % (`tools/compare_table3.py`). Case 2 (100 mTorr, 200 V, `results/case2/`, 4 ranks, 68 min) reproduces Turner's Table III to -0.4 % in the
+mid-plane density and within 1.2 % in electron temperature, electron and ion power and ion current;
+`results/case_comparison.png` (`tools/compare_cases.py`) shows both cases in the units of Turner's Figures 3-10. Halving dt, halving dx or doubling the particles per cell
 changes the profile by less than twice the seed-to-seed noise (`results/conv/`, `tools/convergence.py`).
 The diagnostics (IEDF/EEPF, x-t maps, power budget, energy balance) pass 23 self-consistency checks
 (`tools/check_diag.py`); the total current J_e + J_i + eps0 dE/dt is uniform in x to 1.7 %.
@@ -17,6 +19,8 @@ two-term Boltzmann solver (`tools/boltzmann2term.py`): mean energy and drift vel
 20-200 Td.
 
 ![Case 1 versus Turner et al. 2013](results/case1/compare_turner.png)
+
+![Case 1 and Case 2 in the units of Turner's figures](results/case_comparison.png)
 
 ## Build, test, run
 

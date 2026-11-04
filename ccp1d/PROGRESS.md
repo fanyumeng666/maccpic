@@ -2,6 +2,15 @@
 
 每次会话结束前在最上面加一段：日期、做了什么、验证结果、下一步、未解决的问题。
 
+## 2026-11-04（第九次会话：Case 2 试跑、表 III 对照、学习图册、合并到 main）
+
+- **Case 2 试跑成功**（`inputs/case2.in`：100 mTorr、200 V、nx 256、每周期 800 步、每格 256 粒子、5120 周期；4 核 4104 s = 68 分钟，0.80 s/周期；`results/case2/`）。与 Turner 表 III：中面 n_i 8.251e14 vs 8.28e14（**−0.4 %**），kT_e 4.65（2/3⟨ε⟩）/ 4.70（T_x）vs 4.69，S_e 51.0 vs 51.6（−1.2 %），S_i 43.2 vs 43.3（−0.2 %），J_i 0.213 vs 0.215（−0.9 %），ωpe·dt 0.149 vs 0.150，λ_D/dx 2.13 vs 2.14，N_D 880 vs 886，N_P 1.16e5 vs 1.18e5。`check_run --full` 13 项、`check_diag` 23 项全过；格式能量误差 0.54 %；粒子数稳态为初始的 86 %（电子）/ 91 %（离子），窗口漂移 7e-4/100 周期。窗口内记账精确：电子壁损失 11943 = 电离 11945（ΔN_e = +2，与 history 完全一致），离子损失 11991（ΔN_i = −46，一致）；单个电极的 Γ_e/Γ_i 偏差 ±4 % 只是左右涨落。
+- **物理**（`results/case_comparison.png`，`tools/compare_cases.py`，按 Turner 图 3–10 的单位并排画 Case 1 和 2）：密度 ×5.9、T_e 8.9 → 4.7 eV；功率从离子为主（73 %）转到电子为主（54 %），电子功率 47 % 进激发/电离（Case 1 只有 19 %）；加热变成鞘层边缘峰（x = 0.97、5.68 cm，2.4 kW/m³）加体内 ≈ 0.45 kW/m³ 的均匀欧姆加热，电离分布变平；鞘层薄（左缘 0.13–1.18 cm）；IEDF 平均 22 eV、最大 104 eV ≈ V₀/2，EEPF 单斜率接近 Maxwell、45 eV 以上尾巴被削。网格 ⟨J_e·E⟩/精确做功 = 0.80（Case 1 为 0.54）：每步电子走的格数减半，一阶 dt 中心化误差减半，与 M6 的解释一致。
+- **新工具 / 数据**：`data/turner2013_table3.dat`（论文表 III 手抄，来源注明在 `data/SOURCES.md`）；`tools/compare_table3.py`（T18：任意算例对表 III，n_i ±5 %、S_e/S_i ±10 %、J_i ±5 %；Case 1 的 S_e、S_i、J_i 差 −0.7/+0.1/−0.1 %，N_P（电子+离子）−0.9 %，说明 Turner 的 S_e 对应精确做功而不是网格 J·E）；`tools/compare_cases.py`；`common.turner_table3()` 按 n_gas、V0 识别算例，`check_run.py` 第 5 项对 Case 2–4 用表 III 的中面密度。
+- **文档**：`doc/figures.md` 图册与数据索引（学习顺序、每张图看什么、关键数字——全部核对过 PROGRESS 的出处、重画命令、测试数字表）；`README.md`（ccp1d 与根目录）、`HANDOVER.md` 状态横幅、`PLAN.md`（T18、Case 2 行）。`make check` 全过。
+- **仓库**：本次会话结束时把 `claude/sleepy-maxwell-e7pd6c` 快进合并到 `main` 并删除该分支，GitHub 上只保留最新版本（所有提交都在 main 上）。
+- 未解决 / 可选：Turner 的 kT_e 定义不明（我们的 2/3⟨ε⟩ 与 T_x 把它夹在中间，Case 2 两者只差 1 %）；Case 3、4 需要 8–50 倍的步数（4 核估计 5 小时和 30 小时以上），留给集群；网格 ⟨J_e·E⟩ 诊断若要和精确做功一致，需把电流沉积在半步位置并用时间中心化的场（代码未改，精确做功剖面已是正确的量）。
+
 ## 2026-11-04（第八次会话：M3 电子群测试）
 
 - **M3 完成（T12 PASS）**：`tests/swarm/swarm.f90` 用生产代码的 push + mcc 做均匀电场、周期边界、只有电子的脉冲 Townsend 电子群（次级电子保留，随机删除归一化，2 万电子，每个 E/N 27 µs，4 核单进程 75 s）；参照是新写的两项 Boltzmann 求解器 `tools/boltzmann2term.py`（同一套截面，temporal growth 模型 + 能量平分电离，Scharfetter–Gummel 有限体积，F = n/√ε 变量；Druyvesteyn 解析解复现到 5e-14，Maxwell 极限 1e-3，功率平衡 1e-4）。`make check-swarm` 一键跑三样。
