@@ -1,0 +1,9 @@
+# ccp1d electron swarm (tests/swarm/swarm.f90): uniform field, periodic, He background, pulsed-Townsend (secondaries kept, random renormalisation)
+# n_gas =   9.6400E+20 m^-3, dt =   1.8437E-10 s, electrons = 20000, steps = 150000, averaged over the last 100000
+# one-collision-per-step factor (1-exp(-numax dt))/(numax dt) =  0.99206 (all collision rates are lower by this factor)
+# 1 E/N[Td]  2 E[V/m]  3 <eps>[eV]  4 v_d[m/s]  5 alpha/N = nu_iz/(N v_d)[m^2]  6 P_in=eEv_d[eV/s]  7 P_loss = inelastic + elastic + removed electrons [eV/s]  8 (P_in-P_loss)/P_in  9 nu_el[s^-1] 10 nu_exc1 11 nu_exc2 12 nu_iz (= net growth rate)  13 exact identity residual  14 wall[s]
+    20.0 -1.928000E+01     7.28818  4.363548E+04  2.198504E-23  8.473186E+05  8.357740E+05   1.362E-02  7.34896E+07  2.05922E+04  1.17565E+04  9.24792E+02  -1.810E-13      71.0
+    50.0 -4.820000E+01     9.22879  1.154883E+05  3.318544E-22  5.604212E+06  5.600425E+06   6.759E-04  7.40224E+07  1.10758E+05  9.55383E+04  3.69456E+04   1.804E-12      73.4
+   100.0 -9.640000E+01    12.21437  2.480767E+05  1.179828E-21  2.406526E+07  2.405898E+07   2.612E-04  7.24002E+07  2.97778E+05  3.65610E+05  2.82151E+05  -1.061E-12      72.5
+   150.0 -1.446000E+02    15.61841  3.966388E+05  2.079154E-21  5.769297E+07  5.768871E+07   7.383E-05  6.94354E+07  4.75715E+05  7.76969E+05  7.94985E+05  -4.300E-13      74.2
+   200.0 -1.928000E+02    19.62249  5.570589E+05  2.892703E-21  1.080036E+08  1.079937E+08   9.255E-05  6.57889E+07  6.30166E+05  1.28749E+06  1.55340E+06   6.216E-13      73.3

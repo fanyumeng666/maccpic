@@ -95,7 +95,7 @@ def left(b, f=0.5):
 
 # ---------------- title ----------------
 ax.text(1, 65.2, 'ccp1d 功能流程图：一维有界静电 PIC-MCC（目标：Turner 等 2013 氦基准 Case 1）', fontsize=14, fontweight='bold', va='top')
-ax.text(1, 63.3, '每个方框：例程名（等宽字体）+ 它做的事。绿色实线 = 已完成并通过测试（M0、M1、M2、M4 的 Case 1 首轮）；橙色虚线 = 待完成（里程碑标在右上角）；灰色 = 数据。', fontsize=9, va='top', color='#333')
+ax.text(1, 63.3, '每个方框：例程名（等宽字体）+ 它做的事。绿色实线 = 已完成并通过测试（M0–M7 全部）；橙色虚线 = 待完成；灰色 = 数据。', fontsize=9, va='top', color='#333')
 
 # ---------------- column 1: setup ----------------
 frame(0.5, 1.2, 21.5, 60.4, '① 启动（main.f90 开头）')
@@ -114,7 +114,7 @@ for i, (lab, st) in enumerate([('已完成并通过测试', 'done'), ('待完成
     s = STYLE[st]
     ax.add_patch(FancyBboxPatch((1.5, 8.6 - 2.2 * i), 3.2, 1.5, boxstyle='round,pad=0.15', fc=s['fc'], ec=s['ec'], ls=s['ls'], lw=1.2))
     ax.text(5.3, 9.35 - 2.2 * i, lab, fontsize=8.5, va='center')
-ax.text(12.0, 9.6, '状态日期 2026-11-02\nM0–M2、M4–M7 完成\nM3 待做', fontsize=8, va='top', color='#444')
+ax.text(12.0, 9.6, '状态日期 2026-11-04\nM0–M7 全部完成', fontsize=8, va='top', color='#444')
 
 arrow(bottom(A1), top(A2)); arrow(bottom(A2), top(A3)); arrow(bottom(A3), top(A4)); arrow(bottom(A4), top(A5))
 arrow(bottom(A5), (11.3, 30.3))
@@ -168,9 +168,9 @@ C1 = box(66.5, 55.3, 32, 4.0, 'diag: diag_final（iperiod == n_periods）', '归
 C2 = box(66.5, 47.0, 32, 7.3, '输出文件（全部 ASCII，# 表头带单位，numpy.loadtxt 直接读）', 'profiles.dat：n_e, n_i, φ, E, ⟨ε_e⟩, 电离率, ⟨J_e·E⟩, ⟨J_i·E⟩, Γ_i, ⟨ε_x,e⟩, ⟨ε_i⟩\n'
          'iedf_left/right, eedf_left/right：壁面通量能谱  eepf.dat：F(ε), F/√ε（中心 10 %）\nxt_phi/ne/ni/Je/Ji/PeE/ioniz.dat：n_phase × (nx+1) 相位分辨图\n'
          'info.txt 结果段：中心密度、T_eff、ωpe·dt、Γ、撞击能、能量平衡三把尺 P_part / P_JE / P_VI、P_numerical', 'done', lfs=7.6)
-C3 = box(66.5, 40.4, 32, 5.6, 'tools/（全部就位）', 'compare_turner 基准叠画+误差   convergence T15   dual_frequency T17   check_run 13 项   check_diag T16 23 项\n'
-         'plot_xt 8 张 x–t 图   plot_power 功率分解   plot_profiles / plot_dist / plot_history   check_sheath   plot_initial   draw_flow', 'done', lfs=7.6)
-C5 = box(66.5, 26.0, 32, 13.4, '验证已通过（make check + 物理标定 + 基准 + 收敛 + 诊断自洽 + 双频）', 'T1 泊松 1e-14、二阶收敛、高斯定律 1e-13   T2 CIC 沉积 1e-16、端点半格、1 与 2 rank 一致\n'
+C3 = box(66.5, 40.4, 32, 5.6, 'tools/（全部就位）', 'compare_turner 基准叠画   convergence T15   dual_frequency T17   boltzmann2term + compare_swarm T12\n'
+         'check_run 13 项   check_diag T16 23 项   plot_xt / plot_power / plot_profiles / plot_dist / plot_history   check_sheath   plot_initial', 'done', lfs=7.6)
+C5 = box(66.5, 25.0, 32, 14.4, '验证已通过（make check + 物理标定 + 基准 + 收敛 + 诊断自洽 + 双频 + 电子群）', 'T1 泊松 1e-14、二阶收敛、高斯定律 1e-13   T2 CIC 沉积 1e-16、端点半格、1 与 2 rank 一致\n'
          'T3 随机数 + check-rng（2e7 粒子尾巴对称，6000 样本 z 值 rms 1.00）   T8 续算逐位相同（含碰撞）\n'
          'T4 截面查表 = 原表（电子 1e-15，离子 1e-7）；ν_max 8.654e7 / 2.793e7   T10 Langmuir 频率差 3e-4\n'
          'T5 MCC 频率：10/30/100 eV 电子四过程、5 eV 离子两过程 = n_gσv×0.992，|z| < 1.7\n'
@@ -179,8 +179,9 @@ C5 = box(66.5, 26.0, 32, 13.4, '验证已通过（make check + 物理标定 + �
          'T13 Case 1 自检 + T14 全尺寸：中心 n_i 1.432e14 vs 1.403e14（+2.1 %），内点 rms 1.5 %，4 核 170 s\n'
          'T15 收敛：dt/2、nx 256、nppc 1024 与基线差 ≤ 2 倍换种子噪声（地板 1.4 %）；nppc 256 略超\n'
          'T16 自洽 23 项：能谱积分 = 通量、x–t 积分 = info（1e-7）、总电流沿 x 均匀 1.7 %、鞘层相位、加热在鞘层边缘、EEPF 双温\n'
-         'T17 双频：V_lf = 50/100/150 V，E_max 240 → 298 eV ≈ 0.5(V0+V_lf)，密度 −9/−26/−45 %；200 V 鞘层填满间隙熄灭', 'done', lfs=7.4)
-C6 = box(66.5, 20.6, 32, 4.4, '验证待做', 'T12 电子群：E/N = 50–500 Td 平均能量、漂移速度；e·E·v_d = 碰撞损失（M3）', 'todo', tag='M3', lfs=7.6)
+         'T17 双频：V_lf = 50/100/150 V，E_max 240 → 298 eV ≈ 0.5(V0+V_lf)，密度 −9/−26/−45 %；200 V 鞘层填满间隙熄灭\n'
+         'T12 电子群：PIC vs 两项 Boltzmann（同截面）20–200 Td 平均能量、漂移速度差 0.1–1 %，α/N 2–5 %', 'done', lfs=7.4)
+C6 = box(66.5, 20.6, 32, 3.4, '待做', '全部里程碑 M0–M7 完成；剩余：README / 面试材料整理，HANDOVER 更新，可选 Case 2', 'todo', lfs=7.6)
 C7 = box(66.5, 12.2, 32, 7.2, 'data/（已就位）', 'he/electron_scattering, excitation_1 (19.82 eV), excitation_2 (20.61 eV), ionization (24.59 eV)：e–He，Biagi 7.1\n'
          'he/ion_scattering（各向同性）, ion_back_scatter（背向 = 电荷交换）：He⁺–He，Phelps，能量变量 ε_rel\n'
          'he/charge_exchange.dat：基准不用。格式 energy[eV] sigma[m²]，0.01 eV 间距，到 749.99 eV，超出取末值\n'

@@ -10,21 +10,22 @@
 !      effective ionization frequency and alpha/N, collision frequencies,
 !      the energy distribution and two energy-balance checks are written to
 !      <outdir>/swarm_pic.dat and swarm_eedf_<E/N>Td.dat.
-!      Usage: swarm [outdir] [xsec_dir]
+!      Usage: swarm [outdir] [xsec_dir] [E/N list in Td, comma separated]
 program swarm
   use global
   use random
   use xsec
   use mcc
   implicit none
-  integer, parameter :: nen = 5
-  real(8), parameter :: en_td(nen) = (/ 20d0, 50d0, 100d0, 150d0, 200d0 /)   ! above ~150 Td electrons run away in this cross-section model
+  integer, parameter :: nen_max = 12
+  integer :: nen = 5
+  real(8) :: en_td(nen_max) = (/ 20d0, 50d0, 100d0, 150d0, 200d0, 0d0, 0d0, 0d0, 0d0, 0d0, 0d0, 0d0 /)
   integer(8), parameter :: nel = 20000
   integer, parameter :: nsteps = 150000, navg = 100000, nbin = 600, hist_every = 20
   real(8), parameter :: debin = 0.5d0
   character(len=256) :: outdir, arg
   character(len=300) :: fn
-  integer :: k, istep, u, uf, b
+  integer :: k, istep, u, uf, b, ios
   integer(8) :: i, c_el, c_x1, c_x2, c_iz, nhist
   real(8) :: efield, f, sig, vold, vnew, work, sume, sumvx, eloss, einel, erem, ke0, ke1, tavg, e, vd
   integer(8) :: r, nrem
@@ -38,6 +39,19 @@ program swarm
   xsec_dir = 'data/he'
   if (command_argument_count() >= 2) then
     call get_command_argument(2, arg); xsec_dir = arg
+  end if
+  if (command_argument_count() >= 3) then
+    call get_command_argument(3, arg)
+    do k = 1, len_trim(arg)
+      if (arg(k:k) == ',') arg(k:k) = ' '
+    end do
+    en_td = 0d0
+    nen = 0
+    do k = 1, nen_max
+      read(arg, *, iostat=ios) en_td(1:k)
+      if (ios /= 0) exit
+      nen = k
+    end do
   end if
   nx = 100; L = 1d0; n_gas = 9.64d20; T_gas = 300d0
   nppc = 400; maxnp_factor = 2; freq = 13.56d6; steps_per_period = 400     ! dt of Case 1

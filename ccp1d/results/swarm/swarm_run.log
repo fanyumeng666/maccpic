@@ -1,0 +1,8 @@
+xsec: tables from data/he
+xsec: thresholds exc1, exc2, ion =   19.820  20.610  24.590 eV
+xsec: numax_e =   8.6545E+07 s^-1 at    8.24 eV;  numax_i =   2.7931E+07 s^-1 at   1000.0 eV
+E/N =    20. Td: <eps> =    7.288 eV, v_d =  4.3635E+04 m/s, alpha/N =  2.199E-23 m^2, P_in =  8.473E+05 eV/s, P_loss =  8.358E+05 eV/s, (P_in-P_loss)/P_in =  0.0136, identity  -1.8E-13  (  71.0 s)
+E/N =    50. Td: <eps> =    9.229 eV, v_d =  1.1549E+05 m/s, alpha/N =  3.319E-22 m^2, P_in =  5.604E+06 eV/s, P_loss =  5.600E+06 eV/s, (P_in-P_loss)/P_in =  0.0007, identity   1.8E-12  (  73.4 s)
+E/N =   100. Td: <eps> =   12.214 eV, v_d =  2.4808E+05 m/s, alpha/N =  1.180E-21 m^2, P_in =  2.407E+07 eV/s, P_loss =  2.406E+07 eV/s, (P_in-P_loss)/P_in =  0.0003, identity  -1.1E-12  (  72.5 s)
+E/N =   150. Td: <eps> =   15.618 eV, v_d =  3.9664E+05 m/s, alpha/N =  2.079E-21 m^2, P_in =  5.769E+07 eV/s, P_loss =  5.769E+07 eV/s, (P_in-P_loss)/P_in =  0.0001, identity  -4.3E-13  (  74.2 s)
+E/N =   200. Td: <eps> =   19.622 eV, v_d =  5.5706E+05 m/s, alpha/N =  2.893E-21 m^2, P_in =  1.080E+08 eV/s, P_loss =  1.080E+08 eV/s, (P_in-P_loss)/P_in =  0.0001, identity   6.2E-13  (  73.3 s)

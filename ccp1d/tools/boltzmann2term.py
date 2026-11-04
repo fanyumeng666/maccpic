@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""boltzmann2term.py [out_dir] [--validate] [--bias F]: steady-state two-term
+"""boltzmann2term.py [out_dir] [--validate] [--bias F] [--en 20,50,...] [--nocurve]: steady-state two-term
 Boltzmann solver for electrons in helium with the ccp1d cross sections
 (data/he), the independent reference of the swarm test T12.  Temporal-growth
 (pulsed Townsend) model, as in BOLSIG+: the normalised distribution n(eps)
@@ -7,7 +7,8 @@ Boltzmann solver for electrons in helium with the ccp1d cross sections
 
     nu_eff n = -d/deps [ G_E + G_el ] + S_inel
     G_E  = -D_E (n' - n/(2 eps)),  D_E = (2/3)(e/m) E^2 eps/(nu_m + nu_eff)   field heating (two-term)
-    G_el = -(2m/M) nu_m eps [ n + kT (n' - n/(2 eps)) ]                       elastic cooling (Davydov)
+    G_el = -(2m/M) nu_el eps [ n + kT (n' - n/(2 eps)) ]                      elastic cooling (Davydov)
+    nu_m = N v (sigma_el + sum sigma_inel): all processes scatter isotropically and transfer momentum
     S_inel: excitation  -nu_k(eps) n(eps) + nu_k(eps+u_k) n(eps+u_k)
             ionization  -nu_iz(eps) n(eps) + 4 nu_iz(2eps+u) n(2eps+u)       (equal sharing, both kept)
     nu_eff = integral nu_iz n deps   (one net electron per ionization; no attachment)
@@ -79,12 +80,20 @@ def _solve_fixed(en_td, ngas, T_K, xs, h, emax, inelastic, nu_eff, growth):
     E = en_td * 1e-21 * ngas               # V/m
     kT = KB * T_K / QE                     # eV
     vf = np.sqrt(2 * QE * ef / ME)
-    sig_m = sigma(xs['electron_scattering'], ef)
+    sig_el = sigma(xs['electron_scattering'], ef)
+    # momentum transfer: every process scatters isotropically, so the total cross section
+    # (elastic + excitations + ionization) enters the drift and the field heating (HP2005 eq. 15);
+    # only the elastic part carries the 2m/M energy loss
+    sig_m = sig_el.copy()
+    if inelastic:
+        for name in ['excitation_1', 'excitation_2', 'ionization']:
+            sig_m = sig_m + sigma(xs[name], ef)
     nu_m = ngas * sig_m * vf
+    nu_el = ngas * sig_el * vf
     with np.errstate(divide='ignore', invalid='ignore'):
         D_E = (2.0 / 3.0) * (QE / ME) * E**2 * ef / (nu_m + nu_eff)      # eV^2/s
     D_E[0] = 0.0
-    V_el = (2 * ME / MION) * nu_m * ef                        # eV/s
+    V_el = (2 * ME / MION) * nu_el * ef                       # eV/s
     D_T = V_el * kT
     D = D_E + D_T
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -216,6 +225,8 @@ if __name__ == '__main__':
     ngas = 9.64e20 * bias
     xs = load_he()
     ens = [20.0, 50.0, 100.0, 150.0, 200.0]
+    if '--en' in sys.argv:
+        ens = [float(v) for v in sys.argv[sys.argv.index('--en') + 1].split(',')]
     with open(os.path.join(out, 'swarm_boltzmann.dat'), 'w') as f:
         f.write('# two-term Boltzmann solution (tools/boltzmann2term.py), He, n_gas = %.4e m^-3 (bias factor %.4f), T_gas = 0, temporal growth, equal energy sharing\n' % (ngas, bias))
         f.write('# 1 E/N[Td]  2 <eps>[eV]  3 v_d[m/s]  4 alpha/N = nu_eff/(N v_d)[m^2]  5 P_in=eEv_d[eV/s]  6 P_elastic  7 P_thresholds  8 nu_eff<eps>  9 balance  10 nu_eff[s^-1]\n')
@@ -228,9 +239,10 @@ if __name__ == '__main__':
                 for e_, n_ in zip(r['ec'], r['n']):
                     g.write('%12.4f %15.7e\n' % (e_, n_))
             print('E/N = %5.0f Td: <eps> = %7.3f eV  v_d = %.4e m/s  nu_eff = %.3e s^-1  alpha/N = %.3e m^2  balance %.1e  top flux/nu_eff %.1e' % (en, r['emean'], r['vd'], r['nu_eff'], r['alpha_n'], bal, r['top_flux'] / max(r['nu_eff'], 1e-300)))
-    with open(os.path.join(out, 'swarm_boltzmann_curve.dat'), 'w') as f:
-        f.write('# two-term Boltzmann: 1 E/N[Td] 2 <eps>[eV] 3 v_d[m/s] 4 alpha/N[m^2]\n')
-        for en in np.logspace(np.log10(10), np.log10(300), 13):
-            r = solve(en, ngas, 0.0, xs)
-            f.write('%10.3f %12.5f %14.6e %14.6e\n' % (en, r['emean'], r['vd'], r['alpha_n']))
+    if '--nocurve' not in sys.argv:
+        with open(os.path.join(out, 'swarm_boltzmann_curve.dat'), 'w') as f:
+            f.write('# two-term Boltzmann: 1 E/N[Td] 2 <eps>[eV] 3 v_d[m/s] 4 alpha/N[m^2]\n')
+            for en in np.logspace(np.log10(10), np.log10(500), 15):
+                r = solve(en, ngas, 0.0, xs)
+                f.write('%10.3f %12.5f %14.6e %14.6e\n' % (en, r['emean'], r['vd'], r['alpha_n']))
     print('wrote', os.path.join(out, 'swarm_boltzmann.dat'))
