@@ -1,0 +1,18 @@
+! Turner et al. 2013 benchmark, Case 2 (He, 200 V, 13.56 MHz, 6.7 cm, 100 mTorr); full size.
+! 5120 periods x 800 steps = 4.1e6 steps; stops cleanly after max_wall_minutes and continues with restart = .true.
+&ccp1d
+  L = 0.067d0, nx = 256
+  freq = 13.56d6, V0 = 200d0
+  n_gas = 3.21d21, T_gas = 300d0
+  n0 = 5.12d14, Te0 = 30000d0, Ti0 = 300d0
+  nppc = 256
+  steps_per_period = 800
+  n_periods = 5120
+  n_avg = 32
+  n_phase = 100
+  seed = 12345
+  xsec_dir = '../../data/he'
+  restart = .false., restart_every = 320
+  maxnp_factor = 6
+  max_wall_minutes = 110d0
+/

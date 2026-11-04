@@ -1,0 +1,11 @@
+# Turner et al., Phys. Plasmas 20, 013507 (2013) (arXiv:1211.5246v2), Table III:
+# time-averaged mid-plane and integrated characteristics of the four helium benchmark cases.
+# n_i and kTe at the mid-plane; S_e, S_i = line-integrated power coupled to electrons / ions;
+# J_i = ion current density at either electrode; numerical figures of merit at the mid-plane;
+# N_D = particles per Debye length, N_P = total particles. Case identification (Table I):
+# case 1: N = 9.64e20 m^-3, V = 450 V; 2: 3.21e21, 200 V; 3: 9.64e21, 150 V; 4: 3.21e22, 120 V.
+# case  n_gas[m^-3]  V0[V]  n_i_centre[m^-3]  kTe[eV]  S_e[W/m^2]  S_i[W/m^2]  J_i[A/m^2]  wpe_dt  lambdaD_dx  nue_dt  nui_dt  N_D   N_P
+  1     9.64e20      450    1.40e14           9.36     34.3        90.6        0.219       0.121   3.72        0.0158  0.00688 1042  31900
+  2     3.21e21      200    8.28e14           4.69     51.6        43.3        0.215       0.150   2.14        0.0262  0.0114   886  118000
+  3     9.64e21      150    1.81e15           3.95     85.2        32.0        0.195       0.110   2.66        0.0391  0.0171  1204  283000
+  4     3.21e22      120    2.57e15           3.65     193.        27.1        0.186       0.066   2.14        0.0643  0.0283   917  329000

@@ -38,3 +38,15 @@ benchmark case 1 (He, 450 V, 13.56 MHz, gap 6.7 cm, n_gas 9.64e20 m⁻³), on th
 the paper's supplementary data). Columns `x [m]   n_i [m^-3]`. Centre value
 1.4046e14 m⁻³, edge value 3.6e13 m⁻³. The five codes in the paper agree with
 each other to better than 1 %.
+
+## turner2013_table3.dat
+
+Table III of the same paper (preprint arXiv:1211.5246v2), transcribed by hand on
+2026-11-04: for each of the four benchmark cases the time-averaged mid-plane ion
+density and electron temperature, the line-integrated power coupled to electrons
+and to ions, the ion current density at either electrode, and the numerical
+figures of merit (ω_pe Δt, λ_D/Δx, ν Δt, particles per Debye length, total
+particles). Three significant digits. The case is identified by the gas density
+and voltage of Table I, also given in the file. Used by `tools/compare_table3.py`
+(T18) and by check 5 of `tools/check_run.py` for Cases 2-4, which have no
+reference profile.
