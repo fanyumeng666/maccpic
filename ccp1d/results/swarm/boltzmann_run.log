@@ -1,0 +1,6 @@
+E/N =    20 Td: <eps> =   7.293 eV  v_d = 4.4143e+04 m/s  nu_eff = 9.812e+02 s^-1  alpha/N = 2.324e-23 m^2  balance 2.9e-06  top flux/nu_eff 3.2e-59
+E/N =    50 Td: <eps> =   9.210 eV  v_d = 1.1532e+05 m/s  nu_eff = 3.602e+04 s^-1  alpha/N = 3.266e-22 m^2  balance -4.7e-07  top flux/nu_eff 3.7e-23
+E/N =   100 Td: <eps> =  12.178 eV  v_d = 2.4743e+05 m/s  nu_eff = 2.733e+05 s^-1  alpha/N = 1.155e-21 m^2  balance -3.2e-07  top flux/nu_eff 3.4e-11
+E/N =   150 Td: <eps> =  15.547 eV  v_d = 3.9457e+05 m/s  nu_eff = 7.694e+05 s^-1  alpha/N = 2.039e-21 m^2  balance 9.2e-07  top flux/nu_eff 2.7e-07
+E/N =   200 Td: <eps> =  19.412 eV  v_d = 5.5134e+05 m/s  nu_eff = 1.503e+06 s^-1  alpha/N = 2.851e-21 m^2  balance 8.6e-05  top flux/nu_eff 2.0e-05
+wrote results/swarm/swarm_boltzmann.dat

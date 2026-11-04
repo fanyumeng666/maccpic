@@ -1,0 +1,4 @@
+# two-term Boltzmann solution (tools/boltzmann2term.py), He, n_gas = 9.5638e+20 m^-3 (bias factor 0.9921), T_gas = 0, temporal growth, equal energy sharing
+# 1 E/N[Td]  2 <eps>[eV]  3 v_d[m/s]  4 alpha/N = nu_eff/(N v_d)[m^2]  5 P_in=eEv_d[eV/s]  6 P_elastic  7 P_thresholds  8 nu_eff<eps>  9 balance  10 nu_eff[s^-1]
+   300.0     28.38747   8.706559e+05   4.121759e-21   2.498045e+08   3.217587e+05   1.507846e+08   9.743052e+07    5.075e-03   3.432113e+06
+   500.0     47.10672   1.462887e+06   5.260248e-21   6.995411e+08   3.586859e+05   2.894287e+08   3.473101e+08    8.926e-02   7.359519e+06

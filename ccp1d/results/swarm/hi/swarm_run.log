@@ -1,0 +1,5 @@
+xsec: tables from data/he
+xsec: thresholds exc1, exc2, ion =   19.820  20.610  24.590 eV
+xsec: numax_e =   8.6545E+07 s^-1 at    8.24 eV;  numax_i =   2.7931E+07 s^-1 at   1000.0 eV
+E/N =   300. Td: <eps> =   29.128 eV, v_d =  8.8019E+05 m/s, alpha/N =  4.153E-21 m^2, P_in =  2.559E+08 eV/s, P_loss =  2.559E+08 eV/s, (P_in-P_loss)/P_in =  0.0001, identity  -8.7E-14  ( 103.4 s)
+E/N =   500. Td: <eps> =   52.905 eV, v_d =  1.4735E+06 m/s, alpha/N =  5.480E-21 m^2, P_in =  7.140E+08 eV/s, P_loss =  7.140E+08 eV/s, (P_in-P_loss)/P_in = -0.0000, identity  -2.0E-13  (  97.7 s)
