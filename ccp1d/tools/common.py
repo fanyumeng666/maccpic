@@ -88,3 +88,16 @@ def expected_phase_drive(info, nph):
     for p in range(nph):
         out[p] = v[bins == p].mean()
     return out
+
+def turner_table3(info):
+    """Identify the Turner et al. (2013) benchmark case of a run from n_gas and V0 and return
+    (case, row) with the Table III row of data/turner2013_table3.dat (columns: case, n_gas, V0,
+    n_i_centre, kTe, S_e, S_i, J_i, wpe_dt, lambdaD_dx, nue_dt, nui_dt, N_D, N_P); (0, None) if
+    the run is not one of the four cases (log-distance in n_gas and V0 larger than 5 %)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    tab = np.loadtxt(os.path.join(here, '..', 'data', 'turner2013_table3.dat'), ndmin=2)
+    dist = np.abs(np.log(tab[:, 1] / info['n_gas'])) + np.abs(np.log(tab[:, 2] / info['V0']))
+    k = int(np.argmin(dist))
+    if dist[k] > 0.05:
+        return 0, None
+    return int(tab[k, 0]), tab[k]

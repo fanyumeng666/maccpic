@@ -16,7 +16,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import check_range, load_info  # noqa: E402
+from common import check_range, load_info, turner_table3  # noqa: E402
 
 QE = 1.602176487e-19
 
@@ -34,15 +34,14 @@ tab = np.loadtxt(os.path.join(here, '..', 'data', 'turner2013_table3.dat'), ndmi
 
 # identify the case
 if case_arg is None:
-    dist = np.abs(np.log(tab[:, 1] / info['n_gas'])) + np.abs(np.log(tab[:, 2] / info['V0']))
-    k = int(np.argmin(dist))
-    if dist[k] > 0.05:
+    case, row = turner_table3(info)
+    if case == 0:
         print('run parameters (n_gas = %.3e, V0 = %.0f) do not match any benchmark case' % (info['n_gas'], info['V0']))
         sys.exit(1)
 else:
-    k = case_arg - 1
-case = int(tab[k, 0])
-(_, _, _, ni_t, te_t, se_t, si_t, ji_t, wdt_t, ldx_t, nue_t, nui_t, nd_t, np_t) = tab[k]
+    case = case_arg
+    row = tab[case - 1]
+(_, _, _, ni_t, te_t, se_t, si_t, ji_t, wdt_t, ldx_t, nue_t, nui_t, nd_t, np_t) = row
 
 n_avg = int(info['n_avg'])
 w = hist[-n_avg:]

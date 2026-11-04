@@ -4,7 +4,7 @@ Default tolerances are for the test mode (nx = 32); --full uses the full-size on
 import os
 import sys
 import numpy as np
-from common import load_dat, load_info, history_columns, profile_columns, check, check_range, expected_phase_drive, QE
+from common import load_dat, load_info, history_columns, profile_columns, check, check_range, expected_phase_drive, turner_table3, QE
 
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 full = '--full' in sys.argv
@@ -50,14 +50,11 @@ ok &= check('4  phi(0,t) vs the drive averaged over the steps of each phase bin,
 x = prof[:, pc['x']]; ni = prof[:, pc['n_i']]; ne = prof[:, pc['n_e']]
 mid = len(x) // 2
 nc = ni[mid - 2:mid + 3].mean()
-tab = np.loadtxt(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'turner2013_table3.dat'), ndmin=2)
-dist = np.abs(np.log(tab[:, 1] / info['n_gas'])) + np.abs(np.log(tab[:, 2] / info['V0']))
-kc = int(np.argmin(dist))
-case = int(tab[kc, 0]) if dist[kc] < 0.05 else 0
+case, row = turner_table3(info)
 if case == 0:
     print('       5  no benchmark case matches n_gas = %.3e, V0 = %.0f V: centre n_i = %.3e (information only)' % (info['n_gas'], info['V0'], nc))
 else:
-    nref = 1.405e14 if case == 1 else tab[kc, 3]
+    nref = 1.405e14 if case == 1 else row[3]
     ok &= check('5  |n_i centre / Turner case %d (%.3e) - 1|' % (case, nref), abs(nc / nref - 1), tol_nc)
 # 6 symmetry (half-domain ion numbers)
 nl, nr = np.trapezoid(ni[:mid + 1], x[:mid + 1]), np.trapezoid(ni[mid:], x[mid:])
