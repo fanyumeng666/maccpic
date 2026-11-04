@@ -8,7 +8,7 @@
 - **物理**（`results/case_comparison.png`，`tools/compare_cases.py`，按 Turner 图 3–10 的单位并排画 Case 1 和 2）：密度 ×5.9、T_e 8.9 → 4.7 eV；功率从离子为主（73 %）转到电子为主（54 %），电子功率 47 % 进激发/电离（Case 1 只有 19 %）；加热变成鞘层边缘峰（x = 0.97、5.68 cm，2.4 kW/m³）加体内 ≈ 0.45 kW/m³ 的均匀欧姆加热，电离分布变平；鞘层薄（左缘 0.13–1.18 cm）；IEDF 平均 22 eV、最大 104 eV ≈ V₀/2，EEPF 单斜率接近 Maxwell、45 eV 以上尾巴被削。网格 ⟨J_e·E⟩/精确做功 = 0.80（Case 1 为 0.54）：每步电子走的格数减半，一阶 dt 中心化误差减半，与 M6 的解释一致。
 - **新工具 / 数据**：`data/turner2013_table3.dat`（论文表 III 手抄，来源注明在 `data/SOURCES.md`）；`tools/compare_table3.py`（T18：任意算例对表 III，n_i ±5 %、S_e/S_i ±10 %、J_i ±5 %；Case 1 的 S_e、S_i、J_i 差 −0.7/+0.1/−0.1 %，N_P（电子+离子）−0.9 %，说明 Turner 的 S_e 对应精确做功而不是网格 J·E）；`tools/compare_cases.py`；`common.turner_table3()` 按 n_gas、V0 识别算例，`check_run.py` 第 5 项对 Case 2–4 用表 III 的中面密度。
 - **文档**：`doc/figures.md` 图册与数据索引（学习顺序、每张图看什么、关键数字——全部核对过 PROGRESS 的出处、重画命令、测试数字表）；`README.md`（ccp1d 与根目录）、`HANDOVER.md` 状态横幅、`PLAN.md`（T18、Case 2 行）。`make check` 全过。
-- **仓库**：本次会话结束时把 `claude/sleepy-maxwell-e7pd6c` 快进合并到 `main` 并删除该分支，GitHub 上只保留最新版本（所有提交都在 main 上）。
+- **仓库**：本次会话结束时把 `claude/sleepy-maxwell-e7pd6c` 快进合并到 `main`（fe4ce45 → cf6b271 之后的提交），GitHub 上 `main` 就是最新版本。删除远端分支被会话的 GitHub 权限拒绝（HTTP 403），该分支与 `main` 指向同一提交，可在 GitHub 的 Branches 页面手动删除。
 - 未解决 / 可选：Turner 的 kT_e 定义不明（我们的 2/3⟨ε⟩ 与 T_x 把它夹在中间，Case 2 两者只差 1 %）；Case 3、4 需要 8–50 倍的步数（4 核估计 5 小时和 30 小时以上），留给集群；网格 ⟨J_e·E⟩ 诊断若要和精确做功一致，需把电流沉积在半步位置并用时间中心化的场（代码未改，精确做功剖面已是正确的量）。
 
 ## 2026-11-04（第八次会话：M3 电子群测试）
