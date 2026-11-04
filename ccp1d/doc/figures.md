@@ -7,7 +7,7 @@
 1. `doc/fig/program_flow.png` + `doc/program_flow.md`：先把一步循环（push → mcc → deposit → poisson → diag）和每个模块的算法讲清楚。
 2. 第 2 节初始条件：装载、噪声、尺度（λ_D/dx、ωpe·dt、ν_max·dt）——面试最常问的数值约束都在这里。
 3. 第 3 节无碰撞鞘层：最简单的物理检验，能说明为什么需要碰撞。
-4. 第 4、4b 节 Case 1：基准对比、剖面、能谱、x–t 图、功率去向、三把能量尺；收敛图说明"误差有多大"。
+4. 第 4、4b、4c 节 Case 1：基准对比、剖面、能谱、x–t 图、功率去向、三把能量尺；收敛图说明"误差有多大"；理论对照说明"哪些公式在这个参数区还成立"。
 5. 第 5–7 节扩展：Case 2 的压强依赖（`results/case_comparison.png` 一张图讲清楚）、双频、电子群对 Boltzmann 方程——展示代码不只是复现一个数。
 6. 第 8 节测试表：每个数字都能在 `PROGRESS.md` 里找到出处。
 
@@ -65,6 +65,10 @@ Turner 等 2013 的表 III 给了四个算例的中面离子密度、电子温�
 | N_P 总粒子数（电子+离子） | 3.16e4 | 3.19e4 | −0.9 % |
 
 要点：积分量（功率、电流）在 1 % 内，密度 +2 %；Turner 的 S_e = 34.3 W/m² 对应我们的**精确做功**而不是网格乘积 ⟨J_e·E⟩（18.3），说明他们的 J·E 是时间中心化的——面试里被问"J·E 为什么对不上"时这是最好的证据（题 4）。电子温度相差 5 %，但论文没有给出 kT_e 的定义（2/3 平均能量还是 x 方向温度），我们的两个定义正好把 9.36 eV 夹在中间，其他积分量都吻合，所以更可能是定义差异。
+
+## 4c. 与经典理论的对照（`tools/theory_check.py`，`doc/theory.md`）
+
+`python3 tools/theory_check.py runs/case1` 把十几条教科书公式（⟨φ_c⟩ = V₀/2、射频 Child 定律、鞘层电容电流、Bohm 点、h_l、Boltzmann 关系、Drude 欧姆加热、硬墙随机加热、ε_c、全局模型粒子平衡）的预测与模拟值并排打印，输出存在 `results/case1/theory.txt`、`results/case2/theory.txt`，逐条解释在 `doc/theory.md`。结论：鞘层/离子侧的理论两个算例都在 3–7 % 内；电子侧的局域 Maxwell 理论只在 Case 2（100 mTorr）成立，Case 1（30 mTorr，ν_m/ω = 0.8，λ_m = 0.4 L）是非局域区（题 5、6、9）。
 
 ## 5. Case 2 试跑：压强依赖（`results/case2/`，4 核 68 分钟）
 

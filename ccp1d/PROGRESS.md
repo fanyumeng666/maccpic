@@ -9,6 +9,7 @@
 - **新工具 / 数据**：`data/turner2013_table3.dat`（论文表 III 手抄，来源注明在 `data/SOURCES.md`）；`tools/compare_table3.py`（T18：任意算例对表 III，n_i ±5 %、S_e/S_i ±10 %、J_i ±5 %；Case 1 的 S_e、S_i、J_i 差 −0.7/+0.1/−0.1 %，N_P（电子+离子）−0.9 %，说明 Turner 的 S_e 对应精确做功而不是网格 J·E）；`tools/compare_cases.py`；`common.turner_table3()` 按 n_gas、V0 识别算例，`check_run.py` 第 5 项对 Case 2–4 用表 III 的中面密度。
 - **文档**：`doc/figures.md` 图册与数据索引（学习顺序、每张图看什么、关键数字——全部核对过 PROGRESS 的出处、重画命令、测试数字表）；`README.md`（ccp1d 与根目录）、`HANDOVER.md` 状态横幅、`PLAN.md`（T18、Case 2 行）。`make check` 全过。
 - **仓库**：本次会话结束时把 `claude/sleepy-maxwell-e7pd6c` 快进合并到 `main`（fe4ce45 → cf6b271 之后的提交），GitHub 上 `main` 就是最新版本。删除远端分支被会话的 GitHub 权限拒绝（HTTP 403），该分支与 `main` 指向同一提交，可在 GitHub 的 Branches 页面手动删除。
+- **与经典理论的对照**（用户提问"数据能和已有理论合上吗"；`tools/theory_check.py`，`doc/theory.md`，`results/case{1,2}/theory.txt`）：⟨φ_c⟩ = V₀/2（0.99 / 1.01）、E_i,max ≈ e⟨φ_c⟩（1.07 / 1.03）、S_i/(eΓ_i) = e⟨φ_birth⟩（1.006 / 1.02）、射频 Child 定律鞘层厚度（0.97 / 碰撞形式 1.11）、鞘层电容给的 J₀（1.03 / 0.95）、撞壁电子能量 2T_hot（1.05 / 1.005）在两个算例都合上；Boltzmann 关系（0.79 / 0.97）、Drude 欧姆加热（0.57 / 0.96）、全局模型 T_e（0.86 / 1.004）、ε_c（0.88 / 0.96）、h_l（2.6 / 1.03）只在 Case 2 合上——Case 1 ν_m/ω = 0.8、λ_m = 0.4 L、鞘层占半间隙 80 %，是非局域区；硬墙随机加热在 Case 1 高估 3 倍（已知），Case 2 随机 + 欧姆 = 56 vs 51 W/m²。
 - 未解决 / 可选：Turner 的 kT_e 定义不明（我们的 2/3⟨ε⟩ 与 T_x 把它夹在中间，Case 2 两者只差 1 %）；Case 3、4 需要 8–50 倍的步数（4 核估计 5 小时和 30 小时以上），留给集群；网格 ⟨J_e·E⟩ 诊断若要和精确做功一致，需把电流沉积在半步位置并用时间中心化的场（代码未改，精确做功剖面已是正确的量）。
 
 ## 2026-11-04（第八次会话：M3 电子群测试）

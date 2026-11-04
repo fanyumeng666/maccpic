@@ -1,0 +1,30 @@
+theory_check: runs/case2   (Turner case: 100 mTorr, 200 V; T_eff = 4.65 eV, T_x = 4.70 eV, n_i,c = 8.251e+14)
+regime: nu_m/omega = 2.83 (nu_m = 2.41e+08 s^-1 from the central EEPF, sigma_m = all isotropic processes)
+        electron mean free path at <eps> = 7.0 eV: 0.55 cm = 0.08 L; energy relaxation length (elastic) 5 L;
+        inelastic mean free path at 30 eV: 2.03 L; ion mean free path at T_e/4: 1.09 mm
+        EEPF slope temperatures: 1-8 eV 5.07 eV, 25-80 eV 5.37 eV
+
+quantity                                              simulation      theory   ratio
+time-averaged plasma potential [V]                         101.4         100   1.014   symmetric discharge: <phi_c> = V0/2 (each sheath swings 0..V0)
+maximum ion energy at the electrode [eV]                   104.5       101.4   1.030   ions see the time-averaged sheath drop e<phi_c> when omega tau_i >> 1
+field work per ion S_i/(e Gamma_i) [eV]                    101.4        99.4   1.020   ions born at rest at the ionization-weighted potential <phi_birth>, all work ends at the wall or in the gas
+ion energy to the wall per ion [eV]                         21.8       21.83   0.999   consistency with the IEDF mean (energy lost to gas by charge exchange is the rest)
+electron energy to the wall per electron [eV]              10.79       9.305   1.160   Maxwellian flux through a retarding sheath carries 2 T_e per electron (L&L 2.4)
+   same, with the hot-group temperature                    10.79       10.74   1.005   2 T_hot with T_hot = 5.37 eV from the EEPF slope 25-80 eV: only the tail reaches the wall
+maximum sheath thickness [cm]                              1.178       1.556   0.757   collisionless RF Child law s_m = [200/243 eps0 (2e/M)^1/2 Vbar^3/2 / J_i]^1/2, Vbar = <phi_c> (L&L 11.2)
+   same, collisional (DC) Child law [cm]                   1.178       1.058   1.113   s = [1.68 eps0 (2 e lambda_i / pi M)^1/2 V^3/2 / J_i]^2/5, lambda_i = 1.7 mm at eps_rel = Vbar/4 (L&L 6.5); s_m/lambda_i = 7
+ion sheath transit time / RF period                        6.863           1   6.863   tau_i = 3 s_m / sqrt(2 e Vbar / M) (Child-law sheath); >> 1 means the ions average the RF field
+Bohm point (|v_i| = u_B(T_eff)) [cm]                       0.759       1.178   0.644   ions must reach u_B = (e T_e/M)^1/2 before entering the sheath (Bohm criterion, L&L 6.2); compared with the maximum sheath extension; the time-averaged edge n_e/n_i = 0.5 is at 0.81 cm
+   same with u_B of the cold group [cm]                   0.7066       1.178   0.600   u_B with T_e = 5.07 eV (the low-energy electrons set the presheath, L&L 6.2 / two-temperature Bohm speed)
+edge/centre density factor h_l = Gamma_i/(n_0 u_B)        0.1525      0.1482   1.029   Godyak: h_l = 0.86 (3 + L/2 lambda_i)^-1/2, lambda_i = 1.1 mm (L&L 10.2); assumes a thin sheath
+   same with the never-sheath bulk length                 0.1525      0.1798   0.848   plasma length l = L - 2 s_m = 4.34 cm between the maximum sheath positions
+Boltzmann temperature of the bulk n_e(phi) [eV]            4.524       4.652   0.972   n_e = n_0 exp(-(phi_0 - phi)/T_B) fitted over 165 nodes never covered by a sheath with phi_0 - phi < 2 T_eff (drop 5.6 V); theory T_B = T_e (cold group 5.07 eV)
+electron heating at the centre [kW/m^3]                   0.4221      0.4414   0.956   Drude ohmic heating J0^2 m nu_m / (2 n e^2) with J0 = 9.2 A/m^2 (fundamental of J_e at the centre); local theory, needs nu_m >~ omega and lambda_m << L
+electron power S_e [W/m^2]                                    51       30.11   1.694   hard-wall (Fermi) stochastic heating 2 x 1/2 m vbar_e n_s u0^2, u0 = omega x half the sheath excursion = 4.52e+05 m/s, n_s = 1.12e+14 (L&L 11.2); upper estimate
+   same, stochastic + bulk ohmic                              51       56.32   0.905   adds the Drude ohmic heating integrated over the never-sheath bulk (26.2 W/m^2)
+collisional energy cost per e-i pair eps_c [eV]            109.2       113.9   0.958   eps_c = sum_k eps_k K_k / K_iz with Maxwellian rates at T_eff (L&L 3.5); simulation: (P_inel + P_el)/(e Gamma_i)
+   same with the central EEPF instead of a Maxwellian [eV]       109.2       112.3   0.972   rates integrated over the measured central EEPF (checks the non-Maxwellian tail)
+ionization rate per area [m^-2 s^-1]                    2.66e+18    2.72e+18   0.978   particle balance n_g K_iz(T_eff, Maxwellian) int n_e dx = Gamma_i,left + Gamma_i,right (global model, L&L 10.2)
+   same with the central EEPF                           2.66e+18   2.462e+18   1.080   n_g K_iz(EEPF) int n_e dx; ratio < 1 means the tail is weaker away from the centre, > 1 stronger
+electron temperature T_eff [eV]                            4.652       4.635   1.004   T_e that balances ionization and ion loss with Maxwellian rates (global model); the real EEPF is not Maxwellian
+RF current amplitude J0 [A/m^2]                            9.231       9.736   0.948   two Child-law sheaths in series, C_s = 1.52 eps0 A/s_m (L&L 11.2): J0 = omega C_s V0/2 A; order of magnitude
