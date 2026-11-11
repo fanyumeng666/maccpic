@@ -2,6 +2,13 @@
 
 每次会话结束前在最上面加一段：日期、做了什么、验证结果、下一步、未解决的问题。
 
+## 2026-11-11（第十次会话：代码说明、学习计划、文档整理）
+
+- 用户要求"把代码各部分写个说明，什么功能什么方法，放到 GitHub，之前的讲解和学习计划也放进去"。新增 `doc/code_guide.md`（逐文件、逐例程：调用者、输入输出、方法；输出文件格式；T1–T18 测试清单；20 个工具；"想改什么去哪里改"）、`doc/study_plan.md`（十天计划：每天读/跑/算/答；之前每次讲解对应的文档位置；面试演练与自测清单）、`doc/README.md`（文档索引）。
+- `program_flow.md` 的过时状态改掉（mcc 不再"待做"、工具不再"待写"、状态表加 Case 2/理论/文档行），速答卡按题号排序（题号不变，其他文档的引用仍有效）；`tools/draw_flow.py` 最后一个块改为已完成并重画 `doc/fig/program_flow.png`。
+- `tools/make_study_pack.sh`：pandoc 把六份文档合成带图的 HTML，Chromium 打印成 `doc/ccp1d_study_pack.pdf`，离线阅读用。
+- 仓库：推到 `main`（`claude/sleepy-maxwell-e7pd6c` 指向同一提交）。下载：`git clone https://github.com/fanyumeng666/maccpic.git` 或 https://github.com/fanyumeng666/maccpic/archive/refs/heads/main.zip。
+
 ## 2026-11-04（第九次会话：Case 2 试跑、表 III 对照、学习图册、合并到 main）
 
 - **Case 2 试跑成功**（`inputs/case2.in`：100 mTorr、200 V、nx 256、每周期 800 步、每格 256 粒子、5120 周期；4 核 4104 s = 68 分钟，0.80 s/周期；`results/case2/`）。与 Turner 表 III：中面 n_i 8.251e14 vs 8.28e14（**−0.4 %**），kT_e 4.65（2/3⟨ε⟩）/ 4.70（T_x）vs 4.69，S_e 51.0 vs 51.6（−1.2 %），S_i 43.2 vs 43.3（−0.2 %），J_i 0.213 vs 0.215（−0.9 %），ωpe·dt 0.149 vs 0.150，λ_D/dx 2.13 vs 2.14，N_D 880 vs 886，N_P 1.16e5 vs 1.18e5。`check_run --full` 13 项、`check_diag` 23 项全过；格式能量误差 0.54 %；粒子数稳态为初始的 86 %（电子）/ 91 %（离子），窗口漂移 7e-4/100 周期。窗口内记账精确：电子壁损失 11943 = 电离 11945（ΔN_e = +2，与 history 完全一致），离子损失 11991（ΔN_i = −46，一致）；单个电极的 Γ_e/Γ_i 偏差 ±4 % 只是左右涨落。

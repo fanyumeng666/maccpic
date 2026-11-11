@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """draw_flow.py [out_dir]: functional flow chart of ccp1d with the completion
-status of every block (green = done and tested, orange = to do, grey = data).
+status of every block (green = done and tested, orange = to do, grey = data); all blocks are done since 2026-11-11.
 Writes program_flow.png and program_flow.svg (default: doc/fig/)."""
 import os
 import sys
@@ -181,7 +181,7 @@ C5 = box(66.5, 25.0, 32, 14.4, '验证已通过（make check + 物理标定 + �
          'T16 自洽 23 项：能谱积分 = 通量、x–t 积分 = info（1e-7）、总电流沿 x 均匀 1.7 %、鞘层相位、加热在鞘层边缘、EEPF 双温\n'
          'T17 双频：V_lf = 50/100/150 V，E_max 240 → 298 eV ≈ 0.5(V0+V_lf)，密度 −9/−26/−45 %；200 V 鞘层填满间隙熄灭\n'
          'T12 电子群：PIC vs 两项 Boltzmann（同截面）20–200 Td 平均能量、漂移速度差 0.1–1 %，α/N 2–5 %', 'done', lfs=7.4)
-C6 = box(66.5, 20.6, 32, 3.4, '待做', '全部里程碑 M0–M7 完成；剩余：README / 面试材料整理，HANDOVER 更新，可选 Case 2', 'todo', lfs=7.6)
+C6 = box(66.5, 20.6, 32, 3.4, '后续（2026-11-11）', '全部里程碑 M0–M7 完成；Case 2 试跑（表 III ≤ 1.2 %）、理论对照 theory_check、代码说明与学习计划', 'done', lfs=7.6)
 C7 = box(66.5, 12.2, 32, 7.2, 'data/（已就位）', 'he/electron_scattering, excitation_1 (19.82 eV), excitation_2 (20.61 eV), ionization (24.59 eV)：e–He，Biagi 7.1\n'
          'he/ion_scattering（各向同性）, ion_back_scatter（背向 = 电荷交换）：He⁺–He，Phelps，能量变量 ε_rel\n'
          'he/charge_exchange.dat：基准不用。格式 energy[eV] sigma[m²]，0.01 eV 间距，到 749.99 eV，超出取末值\n'

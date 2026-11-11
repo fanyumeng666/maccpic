@@ -34,5 +34,5 @@ mpirun -np 4 ./em2          # -np must equal nproc in input.f90
 等离子体 PIC 模拟代码（Fortran 90，MPI 并行）。
 
 - `pic/`：**em2**，二维相对论性电磁 PIC 代码，模拟双 Harris 电流片的磁重联。原作者 S. Matsukiyo（2012），2026 年 10 月整理、修正。说明见 `pic/README.md`（参数、编译、运行、输出）和 `pic/RECONNECTION_MODEL.md`（重联初始状态的实现），中、英、日三语。
-- `ccp1d/`（已完成 M0–M7）：一维有界静电 PIC/MCC 代码，模拟射频容性放电。复现 Turner 等（2013）氦气基准 Case 1：中心离子密度偏差 +2.1 %，129 点均方偏差 1.5 %；另有收敛测试、诊断自洽检查、电子群对比两项 Boltzmann 解、双频扩展、Case 2 试算。入口：`ccp1d/README.md`（编译、测试、运行）、`ccp1d/doc/figures.md`（图册与数据索引）、`ccp1d/doc/program_flow.md`（逐模块讲解）、`HANDOVER.md`（规格）、`ccp1d/PLAN.md`（计划与测试矩阵）、`ccp1d/PROGRESS.md`（日志）。新容器先运行 `./setup.sh` 装编译器。
+- `ccp1d/`（已完成 M0–M7）：一维有界静电 PIC/MCC 代码，模拟射频容性放电。复现 Turner 等（2013）氦气基准 Case 1：中心离子密度偏差 +2.1 %，129 点均方偏差 1.5 %；另有收敛测试、诊断自洽检查、电子群对比两项 Boltzmann 解、双频扩展、Case 2 试算。入口：`ccp1d/doc/README.md`（文档索引，学习从 `ccp1d/doc/study_plan.md` 开始，离线读 `ccp1d/doc/ccp1d_study_pack.pdf`）、`ccp1d/README.md`（编译、测试、运行）、`ccp1d/doc/figures.md`（图册与数据索引）、`ccp1d/doc/program_flow.md`（逐模块讲解）、`HANDOVER.md`（规格）、`ccp1d/PLAN.md`（计划与测试矩阵）、`ccp1d/PROGRESS.md`（日志）。新容器先运行 `./setup.sh` 装编译器。
 - 作者与许可：`ccp1d/` 和仓库级文件由 Fan Yumeng 编写（MIT，见 `LICENSE`）；`pic/`（em2）作者为 S. Matsukiyo，不在 MIT 范围内，作为 `ccp1d/` 的基础收录。截面数据为 CDLA-Permissive-2.0，见 `ccp1d/data/SOURCES.md`。

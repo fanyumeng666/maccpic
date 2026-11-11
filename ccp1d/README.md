@@ -23,6 +23,14 @@ two-term Boltzmann solver (`tools/boltzmann2term.py`): mean energy and drift vel
 
 ![Case 1 and Case 2 in the units of Turner's figures](results/case_comparison.png)
 
+## Documentation (Chinese)
+
+`doc/README.md` lists the documents in reading order: `doc/study_plan.md` (ten-day study plan, index of the
+explanations given during development, interview rehearsal), `doc/program_flow.md` (module-by-module
+algorithms and the 20-question card), `doc/code_guide.md` (every file and routine, output formats, tests,
+tools, where to change what), `doc/initial_conditions.md`, `doc/figures.md` (figure and data index) and
+`doc/theory.md` (comparison with classical formulas). `doc/ccp1d_study_pack.pdf` bundles them with all figures.
+
 ## Build, test, run
 
 ```sh
